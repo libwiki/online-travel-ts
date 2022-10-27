@@ -1,4 +1,5 @@
-const designWidth = 2560; // 设计稿的宽度 4K=3840*2160 2K= 2560*1440 4096
+const designHelpers = require("./design.config.json")
+const designWidth = designHelpers.designWidth; // 设计稿的宽度 4K=3840*2160 2K= 2560*1440 4096
 const rootValue = designWidth / 10;
 
 module.exports = {

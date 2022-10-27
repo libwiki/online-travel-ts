@@ -1,8 +1,9 @@
-const config = require("./design.config");
+const config = require("./design.helpers");
 module.exports = {
     plugins: {
-        'postcss-import': {},
-        '@tailwindcss/nesting': 'postcss-nesting',
+        // 'postcss-import': {},
+        // 'tailwindcss/nesting': 'postcss-nesting',
+        "tailwindcss/nesting": {},
         tailwindcss: {},
         autoprefixer: {},
         'postcss-pxtorem': { // https://github.com/cuth/postcss-pxtorem
