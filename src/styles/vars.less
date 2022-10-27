@@ -1,0 +1,12 @@
+@import "./skins/index.less"; // 导入皮肤
+// 总宽度2k（2560px）
+
+@headerHeight: 100px; // 顶部栏高度
+@leftWidth: 600px; // 左边图表宽度
+@rightWidth: 600px; // 右边图表宽度
+@navHeight: 300px; // 底部菜单蓝高度
+
+:export { // js中共享的变量
+  mainDarkBgColor: var(--skin-chart-block-dark-bg-color);
+  mainLightBgColor: var(--skin-chart-block-light-bg-color);
+}
