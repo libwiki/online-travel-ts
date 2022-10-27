@@ -4,3 +4,4 @@ declare global {
         _configs: any;
     }
 }
+declare module '*.js'

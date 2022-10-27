@@ -1,7 +1,6 @@
-const config = require("./design.helpers");
+const config = require("./design.config");
 module.exports = {
     plugins: {
-        // 'postcss-import': {},
         // 'tailwindcss/nesting': 'postcss-nesting',
         "tailwindcss/nesting": {},
         tailwindcss: {},

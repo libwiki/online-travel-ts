@@ -3,7 +3,7 @@ import vue from '@vitejs/plugin-vue'
 import legacy from '@vitejs/plugin-legacy'
 import {createSvgIconsPlugin} from 'vite-plugin-svg-icons'
 // 开发环境使用import导入 CommonJS模块导入
-// import {viteCommonjs} from '@originjs/vite-plugin-commonjs'
+import {viteCommonjs} from '@originjs/vite-plugin-commonjs'
 
 // 在CSS和Javascript之间共享变量
 import ViteCSSExportPlugin from "vite-plugin-css-export";
@@ -20,10 +20,8 @@ export default defineConfig({
     plugins: [
         vue(),
         nodeResolve(),
-        commonjs({
-            sourceMap: true
-        }),
-        // viteCommonjs(),
+        viteCommonjs(), // 在commonjs插件之前
+        commonjs(),
         legacy({ // 浏览器兼容
             targets: ['ie >= 11'],
             additionalLegacyPolyfills: ['regenerator-runtime/runtime']
@@ -44,10 +42,10 @@ export default defineConfig({
 
     ],
     build: {
-        sourcemap: true,
         brotliSize: false,
+        chunkSizeWarningLimit: 1500,
         commonjsOptions: {
-            // include: [/design.helpers.js/], // 生产环境使用import导入 CommonJS模块导入
+            include: [/design.config.js/], // 生产环境使用import导入 CommonJS模块导入
         }
     },
     define: {

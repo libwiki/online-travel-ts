@@ -92,7 +92,7 @@ async function initTouristFrom() {
           class="tw-text-14 tw-pl-5">人次</span>
       </div>
     </div>
-    <Box :height="300" title="外省客源地排行">
+    <Box :height="350" title="外省客源地排行">
       <div class="tw-h-full tw-flex-1 row-flex-center">
         <Rose class="tw-h-5/6 tw-w-5/6" :data="data1"/>
       </div>
@@ -101,7 +101,7 @@ async function initTouristFrom() {
       </div>
     </Box>
 
-    <Box class="tw-flex-1" title="区外客源城市排行">
+    <Box :height="400" title="区外客源城市排行">
       <div class="tw-h-full tw-flex-1 row-flex-center">
         <RadialBar class="tw-h-5/6 tw-w-5/6" :data="data1"/>
       </div>
@@ -111,7 +111,7 @@ async function initTouristFrom() {
     </Box>
 
 
-    <Box class="tw-flex-1" title="外省客源城市排行">
+    <Box :height="400" title="外省客源城市排行">
       <div class="tw-h-full tw-flex-1 row-flex-center">
         <RadialBar class="tw-h-5/6 tw-w-5/6" :data="data1"/>
       </div>

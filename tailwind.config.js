@@ -1,4 +1,4 @@
-const {designWidth, pxToRem, twRemToRem} = require("./design.helpers");
+const {designWidth, pxToRem, twRemToRem} = require("./design.config");
 const unitValues = {
     0.5: pxToRem(0.5),
     1.5: pxToRem(1.5),
