@@ -4,9 +4,10 @@ import {MapControls} from "three/examples/jsm/controls/OrbitControls";
 import Lights from "/@/hooks/three3d/lib/components/Lights";
 import Helpers from "/@/hooks/three3d/lib/components/Helpers";
 import _, {isString} from "lodash";
-import {IGeoJson} from "/@/@types/geoJson";
-import {IComponent} from "/@/hooks/three3d/lib/components/IComponent";
+import {Coordinate, IGeoFeature, IGeoJson} from "/@/@types/geoJson";
 import MyControls from "/@/hooks/three3d/lib/threeX/MyControls";
+import {IComponent, IFeatureObject} from "/@/hooks/three3d/lib/Interfaces";
+import MapLayer from "/@/hooks/three3d/lib/layers/MapLayer";
 
 export default class Three3DMap {
     el: HTMLElement
@@ -22,6 +23,7 @@ export default class Three3DMap {
     fileLoader = new Three.FileLoader();
     textureLoader = new Three.TextureLoader()
     components: IComponent[] = []
+    featureObjects: IFeatureObject[] = []
 
     // 窗口宽高比
     get aspectRatio() {
@@ -40,8 +42,8 @@ export default class Three3DMap {
         this.loadJson()
     }
 
-    loadJson() {
-        this.fileLoader.load('/geojson/广西河池-大化瑶族自治县.json', (data: any) => {
+    loadJson(jsonUrl: string = '/geojson/dahua/geo.json') {
+        this.fileLoader.load(jsonUrl, (data: any) => {
             if (isString(data)) {
                 try {
                     data = JSON.parse(data)
@@ -49,38 +51,32 @@ export default class Three3DMap {
                     return;
                 }
             }
-            const group = new Three.Group();
-            (data as IGeoJson).features.forEach((feature: any, index: number) => {
-                console.log(feature)
+            const featureObjects: IFeatureObject[] = [];
+            data.features.forEach((feature: IGeoFeature<any>, index: number) => {
+                const properties = {
+                    name: feature.properties.name,
+                    city: feature.properties.city,
+                    country: feature.properties.country,
+                    province: feature.properties.province,
+                }
                 if (feature.geometry.type === 'Polygon') {
-                    group.add(this.parsePolygons2([feature.geometry.coordinates], index))
-                    // const areaArr = this.parsePolygons([feature.geometry.coordinates], index)
+                    // group.add(this.parsePolygons2([feature.geometry.coordinates], index))
+                    const geometry = this.parsePolygons([feature.geometry.coordinates], index)
+                    featureObjects.push({geometry, properties})
                 } else if (feature.geometry.type === 'MultiPolygon') {
-                    group.add(this.parsePolygons2(feature.geometry.coordinates, index))
-                    // const areaArr = this.parsePolygons(feature.geometry.coordinates, index)
+                    // group.add(this.parsePolygons2(feature.geometry.coordinates, index))
+                    const geometry = this.parsePolygons(feature.geometry.coordinates, index)
+                    featureObjects.push({geometry, properties})
                 }
             })
-            this.mapGroup.add(group)
-            console.log(group)
-            // 地图mapGroup的包围盒计算
-            const box3 = new Three.Box3();//创建一个包围盒
-            // .expandByObject()方法：计算层级模型group包围盒
-            box3.expandByObject(group);
-            // console.log('查看包围盒box3', box3);
+            this.featureObjects = featureObjects;
+            new MapLayer(this).onRender()
+            // this.mapGroup.add(group)
 
-            //scaleV3表示包围盒长宽高尺寸
-            const scaleV3 = new Three.Vector3();
-            // .getSize()计算包围盒长宽高尺寸
-            box3.getSize(scaleV3)
-            // 查看控制台包围盒大小，辅助设置相机参数
-            console.log('查看包围盒尺寸', scaleV3);
+            // 设置城市贴图
+            // this.mapGroup.add(this.cityPointMesh(box3))
 
-            // .getCenter()计算一个层级模型对应包围盒的几何体中心
-            box3.getCenter(this.center);
-            this.mapGroup.add(this.cityPointMesh(box3))
-
-            // 查看控制台包围盒集合中心，作为lookAt()参数
-            console.log('查看几何中心', this.center);
+            // 执行组件
             this.components.forEach(v => v.onUpdate())
 
             this.camera.position.set(this.center.x, this.center.y, this.camera.position.z); //沿着z轴观察
@@ -96,11 +92,11 @@ export default class Three3DMap {
     }
 
     parsePolygons(coordinates: any[], index: number) {
-        const areaArr: [number, number][] = []
+        const areaArr: Coordinate[][] = []
         coordinates.forEach((item) => { // 这一层如果有多个说明一个区域有多个图形组成（比如（中国的省份）有大陆、台湾、以及多个不相交的群岛组成）
-            const areaItemArr: [number, number][] = []
-            item.forEach((polygon: any[]) => { // 这一层是每一个区域地图的图形坐标
-                areaItemArr.push(...polygon)
+            const areaItemArr: Coordinate[][] = []
+            item.forEach((polygon: Coordinate[]) => { // 这一层是每一个区域地图的图形坐标
+                areaItemArr.push(polygon)
             })
             areaArr.push(...areaItemArr)
         })
@@ -112,6 +108,7 @@ export default class Three3DMap {
         coordinates.forEach((item) => {
             const shapeArr: Three.Shape[] = [];//轮廓形状Shape集合
             item.forEach((polygon: any[]) => {
+                console.log(polygon)
                 const pointArr: number[] = []
                 const backPointArr: number[] = []
                 const vector2Arr: Three.Vector2[] = []
@@ -188,7 +185,7 @@ export default class Three3DMap {
         var material = new Three.MeshBasicMaterial({
             color: 0xffffff,//设置颜色
             // color: 0xff0000,//设置颜色
-            map: this.textureLoader.load('/geojson/dahua.png', console.log, console.log, console.log),
+            map: this.textureLoader.load('/geojson/dahua/texture/area.png', console.log, console.log, console.log),
             transparent: true, //使用背景透明的png贴图，注意开启透明计算
             // opacity: 0.5,
             // side: DoubleSide, //双面可见
@@ -210,7 +207,10 @@ export default class Three3DMap {
     }
 
     generateRenderer() {
-        const renderer = new Three.WebGLRenderer();
+        const renderer = new Three.WebGLRenderer({
+            antialias: true,     //抗锯齿
+        });
+        renderer.setPixelRatio(window.devicePixelRatio);
         renderer.setSize(this.size.x, this.size.y);
         this.el.appendChild(renderer.domElement);
         return renderer
@@ -221,7 +221,7 @@ export default class Three3DMap {
         const s = this.s
         // const camera = new Three.OrthographicCamera(-s * k, s * k, s, -s, 1, 1000);
         const camera = new Three.PerspectiveCamera(45, this.aspectRatio, 0.1, 20);
-        camera.position.z = 4;
+        camera.position.z = 5;
         camera.up = new Three.Vector3(0, 0, 1); // 使controls的水平旋转轴线为z轴
         return camera
     }
@@ -230,8 +230,8 @@ export default class Three3DMap {
         const controls = new MapControls(this.camera, this.renderer.domElement);
         // const controls = new MyControls(this.camera, this.renderer.domElement);
         // const controls = new OrbitControls(camera, renderer.domElement);
-        controls.minPolarAngle = 0; // 向下翻转的角度
-        controls.maxPolarAngle = (Math.PI / 180) * 85; // 向上翻转的角度
+        // controls.minPolarAngle = 0; // 向下翻转的角度
+        // controls.maxPolarAngle = (Math.PI / 180) * 85; // 向上翻转的角度
         // controls.minAzimuthAngle = 0;
         // controls.maxAzimuthAngle = 0;
         // controls.addEventListener('end', (e) => {

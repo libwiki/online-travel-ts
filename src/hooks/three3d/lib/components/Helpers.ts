@@ -1,6 +1,6 @@
 import Three3DMap from "/@/hooks/three3d/lib/Three3DMap";
 import {AxesHelper, GridHelper} from "three";
-import {IComponent} from "/@/hooks/three3d/lib/components/IComponent";
+import {IComponent} from "/@/hooks/three3d/lib/Interfaces";
 
 export default class Helpers implements IComponent {
     map: Three3DMap
