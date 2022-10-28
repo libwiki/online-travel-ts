@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import {ref} from "vue";
 
-const defaultStatus = true
+const defaultStatus = false
 const blockStatus = ref({
   title: defaultStatus,
   header: defaultStatus,
