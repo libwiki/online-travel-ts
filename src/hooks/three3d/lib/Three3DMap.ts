@@ -60,21 +60,15 @@ export default class Three3DMap {
                     province: feature.properties.province,
                 }
                 if (feature.geometry.type === 'Polygon') {
-                    // group.add(this.parsePolygons2([feature.geometry.coordinates], index))
                     const geometry = this.parsePolygons([feature.geometry.coordinates], index)
                     featureObjects.push({geometry, properties})
                 } else if (feature.geometry.type === 'MultiPolygon') {
-                    // group.add(this.parsePolygons2(feature.geometry.coordinates, index))
                     const geometry = this.parsePolygons(feature.geometry.coordinates, index)
                     featureObjects.push({geometry, properties})
                 }
             })
             this.featureObjects = featureObjects;
             new MapLayer(this).onRender()
-            // this.mapGroup.add(group)
-
-            // 设置城市贴图
-            // this.mapGroup.add(this.cityPointMesh(box3))
 
             // 执行组件
             this.components.forEach(v => v.onUpdate())
@@ -102,104 +96,6 @@ export default class Three3DMap {
         })
         return areaArr;
     }
-
-    parsePolygons2(coordinates: any[], index: number) {
-        const group = new Three.Group()
-        coordinates.forEach((item) => {
-            const shapeArr: Three.Shape[] = [];//轮廓形状Shape集合
-            item.forEach((polygon: any[]) => {
-                console.log(polygon)
-                const pointArr: number[] = []
-                const backPointArr: number[] = []
-                const vector2Arr: Three.Vector2[] = []
-                polygon.forEach((elem: [number, number]) => {
-                    const v = this.mProjection(elem)
-                    if (v) {
-                        pointArr.push(v[0], -v[1], 0.10);
-                        backPointArr.push(v[0], -v[1], 0.01);
-                        vector2Arr.push(new Three.Vector2(v[0], -v[1]))
-                    }
-                });
-                group.add(this.line(pointArr))
-                // group.add(this.line(backPointArr))
-                const shape = new Three.Shape(vector2Arr)
-                shapeArr.push(shape);
-                // // texture.wrapS = RepeatWrapping;
-                // // texture.wrapT = RepeatWrapping;
-                // // texture.repeat.x = 1; // 水平
-                // // texture.repeat.y = 1; // 垂直
-                // const material = new MeshLambertMaterial({
-                //     // map: index <= 1 ? texture : null,
-                //     envMap: texture,
-                //     transparent: true, //使用背景透明的png贴图，注意开启透明计算
-                //     // color: 0x004444,
-                //     color: 0xffffff,
-                //     side: DoubleSide, //两面可见
-                // }); //材质对象
-                // const geometry = new ExtrudeGeometry([shape], {
-                //     depth: 0.1, //拉伸高度 根据行政区尺寸范围设置，比如高度设置为尺寸范围的2%，过小感觉不到高度，过大太高了
-                //     bevelEnabled: false //无倒角
-                // });
-                // const mesh = new Mesh(geometry, material); //网格模型对象
-                // group.add(mesh)
-            })
-            const material = new Three.MeshLambertMaterial({
-                // color: 0x004444,
-                color: 0xffffff,
-                // side: DoubleSide, //两面可见
-            }); //材质对象
-            const geometry = new Three.ExtrudeGeometry(shapeArr, {
-                depth: 0.1, //拉伸高度 根据行政区尺寸范围设置，比如高度设置为尺寸范围的2%，过小感觉不到高度，过大太高了
-                bevelEnabled: false //无倒角
-            });
-            const mesh = new Three.Mesh(geometry, material); //网格模型对象
-            group.add(mesh)
-            // groupShapeArr.push(...shapeArr)
-        })
-        return group;
-    }
-
-    line(pointArr: number[], loop = true) {
-        /**
-         * 通过BufferGeometry构建一个几何体，传入顶点数据
-         * 通过Line模型渲染几何体，连点成线
-         * LineLoop和Line功能一样，区别在于首尾顶点相连，轮廓闭合
-         */
-        const geometry = new Three.BufferGeometry(); //创建一个Buffer类型几何体对象
-        //类型数组创建顶点数据
-        const vertices = new Float32Array(pointArr);
-        // 创建属性缓冲区对象
-        // 设置几何体attributes属性的位置属性
-        geometry.attributes.position = new Three.BufferAttribute(vertices, 3); //3个为一组，表示一个顶点的xyz坐标
-        // 线条渲染几何体顶点数据
-        const material = new Three.LineBasicMaterial({
-            color: 0x00cccc //线条颜色
-        });//材质对象
-        if (loop) {
-            return new Three.Line(geometry, material);//线条模型对象
-        }
-        return new Three.LineLoop(geometry, material);//首尾顶点连线，轮廓闭合
-    }
-
-    cityPointMesh(box3: Three.Box3) {
-        var material = new Three.MeshBasicMaterial({
-            color: 0xffffff,//设置颜色
-            // color: 0xff0000,//设置颜色
-            map: this.textureLoader.load('/geojson/dahua/texture/area.png', console.log, console.log, console.log),
-            transparent: true, //使用背景透明的png贴图，注意开启透明计算
-            // opacity: 0.5,
-            // side: DoubleSide, //双面可见
-        });
-        const vec3 = new Three.Vector3()
-        const center = new Three.Vector3()
-        box3.getSize(vec3)
-        box3.getCenter(center)
-        var geometry = new Three.PlaneGeometry(vec3.x, vec3.y); //默认在XOY平面上
-        var mesh = new Three.Mesh(geometry, material);
-        mesh.position.set(center.x, center.y, vec3.z + 0.01);//设置mesh位置
-        return mesh;
-    }
-
 
     initSize(width: number, height: number) {
         this.size.x = width

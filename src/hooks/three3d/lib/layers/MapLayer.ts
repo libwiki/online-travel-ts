@@ -1,25 +1,12 @@
 import Three3DMap from "/@/hooks/three3d/lib/Three3DMap";
-import {
-    Box3,
-    ExtrudeGeometry,
-    Group,
-    Line,
-    LineLoop,
-    Mesh,
-    MeshLambertMaterial,
-    Path,
-    Shape,
-    Vector2,
-    Vector3
-} from "three";
-import {IFeatureObject, IFeatureProperties} from "/@/hooks/three3d/lib/Interfaces";
 import * as Three from "three";
+import {IFeatureObject, IFeatureProperties} from "/@/hooks/three3d/lib/Interfaces";
 import BigNumber from "bignumber.js";
 
 export default class MapLayer {
     map: Three3DMap
-    lineGroup = new Group()
-    extrudeShareGroup = new Group()
+    lineGroup = new Three.Group()
+    extrudeShareGroup = new Three.Group()
 
     lineMaterial = new Three.LineBasicMaterial({
         color: 0x00cccc //线条颜色
@@ -48,23 +35,23 @@ export default class MapLayer {
     }
 
     getBox3ByObject3D(object3D: Three.Object3D) {
-        const box3 = new Box3();//创建一个包围盒
+        const box3 = new Three.Box3();//创建一个包围盒
         box3.expandByObject(object3D);
         return box3;
     }
 
-    getSizeByBox3(box3: Box3) {
+    getSizeByBox3(box3: Three.Box3) {
         //scaleV3表示包围盒长宽高尺寸
-        const size = new Vector3();
+        const size = new Three.Vector3();
         box3.getSize(size)
         // 查看控制台包围盒大小，辅助设置相机参数
         console.log('查看包围盒尺寸', size);
         return size
     }
 
-    getCenterByBox3(box3: Box3) {
+    getCenterByBox3(box3: Three.Box3) {
         // 计算一个层级模型对应包围盒的几何体中心
-        const center = new Vector3();
+        const center = new Three.Vector3();
         box3.getCenter(center);
         console.log('查看几何中心', center);
         return center
