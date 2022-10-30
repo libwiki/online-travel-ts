@@ -14,6 +14,7 @@ import {
 } from "three";
 import {IFeatureObject, IFeatureProperties} from "/@/hooks/three3d/lib/Interfaces";
 import * as Three from "three";
+import BigNumber from "bignumber.js";
 
 export default class MapLayer {
     map: Three3DMap
@@ -40,15 +41,15 @@ export default class MapLayer {
     }
 
     initBoxInfo() {
-        const box3 = this.getBox3ByGroup(this.map.mapGroup)
+        const box3 = this.getBox3ByObject3D(this.map.mapGroup)
         const size = this.getSizeByBox3(box3)
         const center = this.getCenterByBox3(box3)
         this.map.center = center
     }
 
-    getBox3ByGroup(group: Group) {
+    getBox3ByObject3D(object3D: Three.Object3D) {
         const box3 = new Box3();//创建一个包围盒
-        box3.expandByObject(group);
+        box3.expandByObject(object3D);
         return box3;
     }
 
@@ -81,7 +82,7 @@ export default class MapLayer {
                         vector3Arr.push(new Three.Vector3(v[0], -v[1], 0))
                     }
                 })
-                this.drawLine(vector3Arr, item.properties)
+                this.drawLine(vector3Arr, item.properties, loop)
                 this.drawExtrudeShare(new Three.Shape(vector2Arr), item.properties)
             })
         })
@@ -89,22 +90,31 @@ export default class MapLayer {
         this.map.mapGroup.add(this.extrudeShareGroup)
     }
 
-    cityPointMesh(box3: Three.Box3) {
-        var material = new Three.MeshBasicMaterial({
+    drawPlaneTextureByBox3(box3: Three.Box3, textureUrl: string, zOffset = 0, options: any = {}) {
+        const texture = this.map.textureLoader.load(textureUrl)
+        texture.wrapS = Three.RepeatWrapping;
+        texture.wrapT = Three.RepeatWrapping;
+        const material = new Three.MeshLambertMaterial({
             color: 0xffffff,//设置颜色
             // color: 0xff0000,//设置颜色
-            map: this.map.textureLoader.load('/geojson/dahua/texture/area.png', console.log, console.log, console.log),
+            map: texture,
             transparent: true, //使用背景透明的png贴图，注意开启透明计算
+            depthTest: false, // 关闭深度测试(解决闪烁的问题，renderOrder等目前均出现些问题)
+            // polygonOffset: true,
+            // polygonOffsetUnits: 4,
+            // polygonOffsetFactor: 0.41,
             // opacity: 0.5,
-            // side: DoubleSide, //双面可见
+            // side: Three.DoubleSide, //双面可见
+            ...options
         });
-        const vec3 = new Three.Vector3()
+        const size = new Three.Vector3()
         const center = new Three.Vector3()
-        box3.getSize(vec3)
+        box3.getSize(size)
         box3.getCenter(center)
-        var geometry = new Three.PlaneGeometry(vec3.x, vec3.y); //默认在XOY平面上
-        var mesh = new Three.Mesh(geometry, material);
-        mesh.position.set(center.x, center.y, vec3.z + 0.01);//设置mesh位置
+        const geometry = new Three.PlaneGeometry(size.x, size.y); //默认在XOY平面上
+        const mesh = new Three.Mesh(geometry, material);
+        mesh.position.set(center.x, center.y, BigNumber(size.z).plus(zOffset).toNumber());//设置mesh位置
+        // mesh.renderOrder = 100; // 设置贴图渲染排序（解决模型重合闪烁的问题）
         return mesh;
     }
 
@@ -114,37 +124,27 @@ export default class MapLayer {
             this.lineGroup.add(new Three.Line(geometry, this.lineMaterial));
         } else { //首尾顶点连线，轮廓闭合
             this.lineGroup.add(new Three.LineLoop(geometry, this.lineMaterial));
-
         }
     }
 
     drawExtrudeShare(shapes: Three.Shape | Three.Shape[], properties: IFeatureProperties) {
-        const geometry = new Three.ShapeGeometry(shapes)
-        // const geometry = new Three.ExtrudeGeometry(shapes, {
-        //     depth: 0.1, //拉伸高度 根据行政区尺寸范围设置，比如高度设置为尺寸范围的2%，过小感觉不到高度，过大太高了
-        //     bevelEnabled: false //无倒角
-        // });
+        const geometry = new Three.ExtrudeGeometry(shapes, {
+            depth: 0.1, //拉伸高度 根据行政区尺寸范围设置，比如高度设置为尺寸范围的2%，过小感觉不到高度，过大太高了
+            bevelEnabled: false //无倒角
+        });
         const material1 = this.shareMaterial.clone()
-        material1.transparent = true
-        // material1.color = new Three.Color(0xff3300)
-        if (true || ['白马乡', '共和乡'].includes(properties.name)) {
-            const texture = this.map.textureLoader.load(`/geojson/dahua/texture/${properties.name}.png`, (e) => {
-                console.log('texture load ', properties.name, e)
-            }, (e) => {
-                console.log('texture error ', e, properties)
-            })
-            texture.wrapS = Three.RepeatWrapping;
-            texture.wrapT = Three.RepeatWrapping;
-            material1.map = texture
-        }
-        // const material2 = this.shareMaterial.clone()
-        // material2.transparent = true
-        // // material2.color = new Three.Color(0xff0000)
-        // const texture2 = this.map.textureLoader.load('/geojson/dahua/texture/extrude_bg.png')
-        // texture2.wrapS = Three.RepeatWrapping;
-        // texture2.wrapT = Three.RepeatWrapping;
-        // material2.map = texture2
         const mesh = new Three.Mesh(geometry, material1); //网格模型对象
-        this.extrudeShareGroup.add(mesh)
+        const textureUrl = `/geojson/dahua/texture/${properties.name}.png`;
+        const box3 = this.getBox3ByObject3D(mesh)
+        const planeMesh = this.drawPlaneTextureByBox3(box3, textureUrl)
+        // const planeMesh2 = this.drawPlaneTextureByBox3(box3, '/geojson/贴图.png', 0.02)
+        const shareGroup = new Three.Group()
+
+        shareGroup.add(mesh)
+        shareGroup.add(planeMesh)
+        // shareGroup.add(planeMesh2)
+        this.extrudeShareGroup.add(shareGroup)
+        // this.map.scene.add(mesh)
+        // this.map.scene.add(planeMesh2)
     }
 }
