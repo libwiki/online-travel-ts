@@ -39,6 +39,7 @@ export default class MapLayer extends Component {
         const size = getSizeByBox3(box3)
         const center = getCenterByBox3(box3)
         this.map.center = center
+        this.map.mapSize = size
         this.generateMap(this.map.featureObjects)
     }
 

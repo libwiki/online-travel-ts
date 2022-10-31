@@ -7,6 +7,8 @@ import Lights from "/@/hooks/three3d/lib/components/Lights";
 import MapLayer from "/@/hooks/three3d/lib/components/MapLayer";
 import {IComponent, IFeatureObject} from "/@/hooks/three3d/lib/Interfaces";
 import {MapControls} from "three/examples/jsm/controls/OrbitControls";
+import {CSS3DRenderer} from "three/examples/jsm/renderers/CSS3DRenderer";
+import Tag from "/@/hooks/three3d/lib/htmlComponents/tags/Tag";
 
 export default class BaseThree3DMap extends EmptyComponent {
     el: HTMLElement
@@ -16,20 +18,21 @@ export default class BaseThree3DMap extends EmptyComponent {
     size = new Three.Vector3()
     s = 1.6; //三维场景显示范围控制系数，系数越大，显示的范围越大
     center = new Three.Vector3();
+    mapSize = new Three.Vector3();
     mapGroup = new Three.Group();
     fileLoader = new Three.FileLoader();
     textureLoader = new Three.TextureLoader()
+    featureObjects: IFeatureObject[] = []
+    camera: Three.Camera
+    controls: MapControls
+    renderer: Three.WebGLRenderer
+    css3DRenderer: CSS3DRenderer
     components: IComponent[] = [ // 组件
         new Helpers(this),
         new Lights(this),
         new MapLayer(this),
+        new Tag(this),
     ]
-    featureObjects: IFeatureObject[] = []
-
-
-    camera: Three.Camera
-    controls: MapControls
-    renderer: Three.WebGLRenderer
 
     constructor(el?: HTMLElement) {
         super()
@@ -37,9 +40,9 @@ export default class BaseThree3DMap extends EmptyComponent {
         this.setSize(window.innerWidth, window.innerHeight)
         this.camera = this.generateCamera()
         this.renderer = this.generateRenderer()
+        this.css3DRenderer = this.generateCss3DRenderer()
         this.controls = this.generateControls()
         // this.scene.background = new Three.Color(0xffffff)
-        this.components.forEach(v => v.onStart())
     }
 
     onStart() {
@@ -57,6 +60,7 @@ export default class BaseThree3DMap extends EmptyComponent {
         super.onUpdate()
         requestAnimationFrame(this.onUpdate.bind(this));
         this.renderer.render(this.scene, this.camera)
+        this.css3DRenderer.render(this.scene, this.camera)
         this.components.forEach(v => v.onUpdate())
         this.controls.update();
     }
@@ -83,6 +87,18 @@ export default class BaseThree3DMap extends EmptyComponent {
         renderer.setPixelRatio(window.devicePixelRatio);
         renderer.setSize(this.size.x, this.size.y);
         this.el.appendChild(renderer.domElement);
+        return renderer
+    }
+
+    generateCss3DRenderer() {
+        const renderer = new CSS3DRenderer();
+        renderer.setSize(this.size.x, this.size.y);
+        renderer.domElement.style.position = "absolute"
+        renderer.domElement.style.top = "0px"
+        renderer.domElement.style.top = "0px"
+        renderer.domElement.style.pointerEvents = "none"
+        console.log('renderer.domElement', renderer.domElement, this.size)
+        this.el.appendChild(renderer.domElement)
         return renderer
     }
 
