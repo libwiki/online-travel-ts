@@ -17,11 +17,14 @@ export default class Helpers implements IComponent {
 
         const gridHelper = new GridHelper(10, 10);
         this.gridHelper = gridHelper
+        this.gridHelper.rotateX(Math.PI / 2)
         this.map.scene.add(gridHelper);
+
     }
 
     onUpdate(): void {
         this.axesHelper.position.set(this.map.center.x, this.map.center.y, 0)
         this.gridHelper.position.set(this.map.center.x, this.map.center.y, 0)
+
     }
 }

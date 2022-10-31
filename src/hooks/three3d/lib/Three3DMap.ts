@@ -116,7 +116,7 @@ export default class Three3DMap {
         const k = this.aspectRatio
         const s = this.s
         // const camera = new Three.OrthographicCamera(-s * k, s * k, s, -s, 1, 1000);
-        const camera = new Three.PerspectiveCamera(45, this.aspectRatio, 0.1, 20);
+        const camera = new Three.PerspectiveCamera(45, this.aspectRatio, 0.1, 2000);
         camera.position.z = 5;
         camera.up = new Three.Vector3(0, 0, 1); // 使controls的水平旋转轴线为z轴
         return camera
@@ -130,13 +130,13 @@ export default class Three3DMap {
         // controls.maxPolarAngle = (Math.PI / 180) * 85; // 向上翻转的角度
         // controls.minAzimuthAngle = 0;
         // controls.maxAzimuthAngle = 0;
-        // controls.addEventListener('end', (e) => {
-        //     // controls.object.up.setX(this.center.x)
-        //     // controls.object.up.setY(this.center.y)
-        //     // controls.object.up.setZ(this.center.z)
-        //     console.log(e, this.center, controls.object.up)
-        //
-        // })
+        controls.addEventListener('end', (e) => {
+            // controls.object.up.setX(this.center.x)
+            // controls.object.up.setY(this.center.y)
+            // controls.object.up.setZ(this.center.z)
+            // console.log(e, this.center, controls.object.up)
+
+        })
         return controls
     }
 
