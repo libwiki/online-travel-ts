@@ -3,6 +3,7 @@ import * as Three from "three";
 import {IFeatureObject, IFeatureProperties} from "/@/hooks/three3d/lib/Interfaces";
 import BigNumber from "bignumber.js";
 import {ToonShader1} from "three/examples/jsm/shaders/ToonShader";
+import {MultiplyBlending, NoBlending, NormalBlending} from "three/src/constants";
 
 export default class MapLayer {
     map: Three3DMap
@@ -123,7 +124,7 @@ export default class MapLayer {
 
     generateMap(featureObjects: IFeatureObject[], loop = true) {
         featureObjects.forEach(item => { // 每一个区域
-            const lineGeos: Three.BufferGeometry[] = []
+            // const lineGeos: Three.BufferGeometry[] = []
             const shapeGeos: Three.ExtrudeGeometry[] = []
             item.geometry.forEach(arr => {
                 const vector2Arr: Three.Vector2[] = []
@@ -132,12 +133,11 @@ export default class MapLayer {
                     const v = this.map.mProjection(elem)
                     if (v) {
                         vector2Arr.push(new Three.Vector2(v[0], -v[1]))
-                        vector3Arr.push(new Three.Vector3(v[0], -v[1], 0.11))
+                        vector3Arr.push(new Three.Vector3(v[0], -v[1], 0.103))
                     }
                 })
                 shapeGeos.push(this.getExtrudeGeometry(new Three.Shape(vector2Arr)))
-                lineGeos.push(this.getGeometryByPoints(vector3Arr))
-                const geometry = this.getGeometryByPoints(vector3Arr);
+                // lineGeos.push(this.getGeometryByPoints(vector3Arr))
                 this.drawLine(vector3Arr, item.properties, loop)
             })
             const geo = this.mergeBufferGeometries(shapeGeos)
@@ -147,8 +147,8 @@ export default class MapLayer {
             // this.lineGroup.add(new Three.Line(lineGeo, this.lineMaterial));
             // this.drawExtrudeShareByGeometry(geo, item.properties)
         })
-        this.map.mapGroup.add(this.extrudeShareGroup)
         this.map.mapGroup.add(this.lineGroup)
+        this.map.mapGroup.add(this.extrudeShareGroup)
     }
 
     drawPlaneTextureByBox3(box3: Three.Box3, textureUrl: string, zOffset = 0, options: any = {}) {
@@ -160,7 +160,8 @@ export default class MapLayer {
             // color: 0xff0000,//设置颜色
             map: texture,
             transparent: true, //使用背景透明的png贴图，注意开启透明计算
-            depthTest: false, // 关闭深度测试(解决闪烁的问题，renderOrder等目前均出现些问题)
+            alphaTest: 0.5, // (解决闪烁的问题)
+            // depthTest: false, // 关闭深度测试(解决闪烁的问题，renderOrder等目前均出现些问题)
             // polygonOffset: true,
             // polygonOffsetUnits: 4,
             // polygonOffsetFactor: 0.41,
@@ -194,21 +195,19 @@ export default class MapLayer {
 
     drawExtrudeShareByGeometry(geometry: Three.BufferGeometry, properties: IFeatureProperties) {
         const material1 = this.shareMaterial.clone()
-
-        let material2 = new Three.ShaderMaterial({
-            uniforms: ToonShader1.uniforms,
-            vertexShader: ToonShader1.vertexShader,
-            fragmentShader: ToonShader1.fragmentShader,
-            side: Three.DoubleSide,
+        const texture2Url = `/geojson/dahua/texture/extrude_bg.png`;
+        const texture = this.map.textureLoader.load(texture2Url)
+        texture.wrapS = Three.RepeatWrapping
+        texture.wrapT = Three.RepeatWrapping
+        material1.map = texture;
+        material1.transparent = true
+        let material2 = new Three.MeshLambertMaterial({
+            // side: Three.DoubleSide,
+            map: texture,
             transparent: true,
-            // blending: Three.AdditiveBlending,
         })
         const textureUrl = `/geojson/dahua/texture/${properties.name}.png`;
-        // const texture = this.map.textureLoader.load(textureUrl)
-        // texture.wrapS = Three.RepeatWrapping
-        // texture.wrapT = Three.RepeatWrapping
-        // material1.map = texture;
-        // material1.transparent = true
+
         const mesh = new Three.Mesh(geometry, [material1, material2]); //网格模型对象
         const box3 = this.getBox3ByObject3D(mesh)
         const planeMesh = this.drawPlaneTextureByBox3(box3, textureUrl)
@@ -227,12 +226,12 @@ export default class MapLayer {
         return new Three.ExtrudeGeometry(shapes, {
             depth: 0.1, //拉伸高度 根据行政区尺寸范围设置，比如高度设置为尺寸范围的2%，过小感觉不到高度，过大太高了
             // bevelEnabled: false, //无倒角
-            curveSegments: 128,
-            bevelEnabled: true,
-            bevelThickness: 0.001,
-            bevelSize: 0.001,
-            bevelOffset: 0.001,
-            // bevelSegments: 0.001
+            curveSegments: 28, // 曲线上点的数量，默认值是12
+            bevelEnabled: true, // 对挤出的形状应用是否斜角，默认值为true
+            bevelThickness: 0.001, // 设置原始形状上斜角的厚度。默认值为0.2。
+            bevelSize: 0.001, // 斜角与原始形状轮廓之间的延伸距离，默认值为bevelThickness-0.1。
+            bevelOffset: 0.0001, // 与倒角开始的形状轮廓的距离。默认值为0。
+            bevelSegments: 1, // 斜角的分段层数，默认值为3。
 
         });
     }
