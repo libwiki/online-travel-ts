@@ -5,7 +5,7 @@ export function useThree3d(el: HTMLElement) {
     return {
         map,
         onRender() {
-            map.onRender()
+            map.onStart()
         },
         loadJson() {
             map.loadJson()

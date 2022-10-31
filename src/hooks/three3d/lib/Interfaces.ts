@@ -1,5 +1,4 @@
 import {Coordinate} from "/@/@types/geoJson";
-import Three3DMap from "/@/hooks/three3d/lib/Three3DMap";
 
 export interface IComponent {
     onStart(): void // 开始
@@ -22,23 +21,3 @@ export interface IFeatureObject {
 }
 
 
-export class Component implements IComponent {
-    map: Three3DMap
-
-    constructor(map: Three3DMap) {
-        this.map = map
-    }
-
-    onDispose(): void {
-    }
-
-    onReady(): void {
-    }
-
-    onStart(): void {
-    }
-
-    onUpdate(): void {
-    }
-
-}

@@ -1,10 +1,10 @@
-import Three3DMap from "/@/hooks/three3d/lib/Three3DMap";
 import {AmbientLight, DirectionalLight, PointLight} from "three";
-import {Component, IComponent} from "/@/hooks/three3d/lib/Interfaces";
+import Component from "/@/hooks/three3d/lib/abstracts/Component";
+import BaseThree3DMap from "/@/hooks/three3d/lib/abstracts/BaseThree3DMap";
 
 export default class Lights extends Component {
 
-    constructor(map: Three3DMap) {
+    constructor(map: BaseThree3DMap) {
         super(map)
         const light = new AmbientLight(0xffffff); // soft white light
         // this.map.scene.add(light);

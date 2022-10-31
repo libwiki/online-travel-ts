@@ -1,7 +1,8 @@
-import {Component, IFeatureObject, IFeatureProperties} from "/@/hooks/three3d/lib/Interfaces";
+import {IFeatureObject, IFeatureProperties} from "/@/hooks/three3d/lib/Interfaces";
 import {getBox3ByObject3D, getCenterByBox3, getSizeByBox3, mergeBufferGeometries} from "/@/hooks/three3d/lib/utils";
 import * as Three from "three";
 import BigNumber from "bignumber.js";
+import Component from "/@/hooks/three3d/lib/abstracts/Component";
 
 export default class MapLayer extends Component {
     lineGroup = new Three.Group()

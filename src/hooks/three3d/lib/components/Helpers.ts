@@ -1,12 +1,12 @@
-import Three3DMap from "/@/hooks/three3d/lib/Three3DMap";
 import {AxesHelper, GridHelper} from "three";
-import {Component} from "/@/hooks/three3d/lib/Interfaces";
+import Component from "/@/hooks/three3d/lib/abstracts/Component";
+import BaseThree3DMap from "/@/hooks/three3d/lib/abstracts/BaseThree3DMap";
 
 export default class Helpers extends Component {
     axesHelper: AxesHelper
     gridHelper: GridHelper
 
-    constructor(map: Three3DMap) {
+    constructor(map: BaseThree3DMap) {
         super(map)
 
         //three.js辅助坐标系
@@ -19,6 +19,10 @@ export default class Helpers extends Component {
         this.gridHelper.rotateX(Math.PI / 2)
         this.map.scene.add(gridHelper);
 
+    }
+
+    onStart() {
+        super.onStart();
     }
 
     onUpdate(): void {
