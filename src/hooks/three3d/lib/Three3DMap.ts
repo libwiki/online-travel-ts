@@ -1,16 +1,17 @@
+import mitt from "mitt";
 import * as Three from "three"
+import {isString} from "lodash";
 import {geoMercator} from "d3-geo";
 import {MapControls} from "three/examples/jsm/controls/OrbitControls";
 import Lights from "/@/hooks/three3d/lib/components/Lights";
 import Helpers from "/@/hooks/three3d/lib/components/Helpers";
-import _, {isString} from "lodash";
-import {Coordinate, IGeoFeature, IGeoJson} from "/@/@types/geoJson";
-import MyControls from "/@/hooks/three3d/lib/threeX/MyControls";
+import MapLayer from "/@/hooks/three3d/lib/components/MapLayer";
+import {Coordinate, IGeoFeature} from "/@/@types/geoJson";
 import {IComponent, IFeatureObject} from "/@/hooks/three3d/lib/Interfaces";
-import MapLayer from "/@/hooks/three3d/lib/layers/MapLayer";
 
 export default class Three3DMap {
     el: HTMLElement
+    emitter = mitt()
     scene = new Three.Scene()
     mProjection = geoMercator()
     camera: Three.Camera
@@ -22,13 +23,13 @@ export default class Three3DMap {
     mapGroup = new Three.Group();
     fileLoader = new Three.FileLoader();
     textureLoader = new Three.TextureLoader()
-    components: IComponent[] = []
+    components: IComponent[] = [ // 组件
+        new Helpers(this),
+        new Lights(this),
+        new MapLayer(this),
+    ]
     featureObjects: IFeatureObject[] = []
 
-    // 窗口宽高比
-    get aspectRatio() {
-        return this.size.x / this.size.y
-    }
 
     constructor(el?: HTMLElement) {
         this.el = el || document.body
@@ -37,9 +38,15 @@ export default class Three3DMap {
         this.renderer = this.generateRenderer()
         this.controls = this.generateControls()
         this.scene.add(this.mapGroup);
-
-        this.initComponents();
+        // this.scene.background = new Three.Color(0xffffff)
+        this.components.forEach(v => v.onStart())
         this.loadJson()
+
+    }
+
+    // 窗口宽高比
+    get aspectRatio() {
+        return this.size.x / this.size.y
     }
 
     loadJson(jsonUrl: string = '/geojson/dahua/geo.json') {
@@ -68,10 +75,9 @@ export default class Three3DMap {
                 }
             })
             this.featureObjects = featureObjects;
-            new MapLayer(this).onRender()
 
             // 执行组件
-            this.components.forEach(v => v.onUpdate())
+            this.components.forEach(v => v.onReady())
 
             this.camera.position.set(this.center.x, this.center.y, this.camera.position.z); //沿着z轴观察
             this.camera.lookAt(this.center.x, this.center.y, this.center.z); //指向中国地图的几何中心
@@ -80,10 +86,6 @@ export default class Three3DMap {
         }, console.log, console.log)
     }
 
-    initComponents() {
-        this.components.push(new Helpers(this))
-        this.components.push(new Lights(this))
-    }
 
     parsePolygons(coordinates: any[], index: number) {
         const areaArr: Coordinate[][] = []
@@ -143,8 +145,10 @@ export default class Three3DMap {
 
     onRender() {
         requestAnimationFrame(this.onRender.bind(this));
+        this.components.forEach(v => v.onUpdate())
         this.controls.update();
         this.renderer.render(this.scene, this.camera)
     }
+
 
 }

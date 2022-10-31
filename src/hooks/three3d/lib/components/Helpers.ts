@@ -1,14 +1,13 @@
 import Three3DMap from "/@/hooks/three3d/lib/Three3DMap";
 import {AxesHelper, GridHelper} from "three";
-import {IComponent} from "/@/hooks/three3d/lib/Interfaces";
+import {Component} from "/@/hooks/three3d/lib/Interfaces";
 
-export default class Helpers implements IComponent {
-    map: Three3DMap
+export default class Helpers extends Component {
     axesHelper: AxesHelper
     gridHelper: GridHelper
 
     constructor(map: Three3DMap) {
-        this.map = map
+        super(map)
 
         //three.js辅助坐标系
         const axesHelper = new AxesHelper(10);
