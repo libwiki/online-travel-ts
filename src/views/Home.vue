@@ -11,14 +11,16 @@ onMounted(() => {
 function initThree3d() {
   if (el.value) {
     const three3d = useThree3d(el.value)
-    three3d.onRender()
-    three3d.loadJson()
+    // three3d.onRender()
+    // three3d.loadJson()
   }
 }
 </script>
 
 <template>
-  <div class="tw-w-full tw-h-full" ref="el"></div>
+  <div class="tw-w-full tw-h-full" ref="el">
+
+  </div>
 </template>
 
 <style lang="less" scoped>
