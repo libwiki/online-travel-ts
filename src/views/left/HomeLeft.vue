@@ -103,13 +103,13 @@ async function initTouristFrom() {
     </Box>
 
     <Box :height="400" title="区外客源城市排行">
-      <Marker/>
-      <!--<div class="tw-h-full tw-flex-1 row-flex-center">-->
-      <!--  <RadialBar class="tw-h-5/6 tw-w-5/6" :data="data1"/>-->
-      <!--</div>-->
-      <!--<div class="tw-h-full tw-flex-1 row-flex-center">-->
-      <!--  <Table stripe :data="data1" :options="tableOptions"/>-->
-      <!--</div>-->
+      <!--<Marker/>-->
+      <div class="tw-h-full tw-flex-1 row-flex-center">
+        <RadialBar class="tw-h-5/6 tw-w-5/6" :data="data1"/>
+      </div>
+      <div class="tw-h-full tw-flex-1 row-flex-center">
+        <Table stripe :data="data1" :options="tableOptions"/>
+      </div>
     </Box>
 
 
