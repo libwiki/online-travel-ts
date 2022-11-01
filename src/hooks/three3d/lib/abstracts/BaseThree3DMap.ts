@@ -31,7 +31,6 @@ export default class BaseThree3DMap extends EmptyComponent {
         new Helpers(this),
         new Lights(this),
         new MapLayer(this),
-        new Tag(this),
     ]
 
     constructor(el?: HTMLElement) {
@@ -116,8 +115,8 @@ export default class BaseThree3DMap extends EmptyComponent {
         const controls = new MapControls(this.camera, this.renderer.domElement);
         // const controls = new MyControls(this.camera, this.renderer.domElement);
         // const controls = new OrbitControls(camera, renderer.domElement);
-        // controls.minPolarAngle = 0; // 向下翻转的角度
-        // controls.maxPolarAngle = (Math.PI / 180) * 85; // 向上翻转的角度
+        controls.minPolarAngle = 0; // 向下翻转的角度
+        controls.maxPolarAngle = (Math.PI / 180) * 85; // 向上翻转的角度
         // controls.minAzimuthAngle = 0;
         // controls.maxAzimuthAngle = 0;
         controls.addEventListener('end', (e) => {

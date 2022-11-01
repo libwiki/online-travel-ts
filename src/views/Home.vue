@@ -11,8 +11,8 @@ onMounted(() => {
 function initThree3d() {
   if (el.value) {
     const three3d = useThree3d(el.value)
-    // three3d.onRender()
-    // three3d.loadJson()
+    three3d.onRender()
+    three3d.loadJson()
   }
 }
 </script>

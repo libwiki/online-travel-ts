@@ -9,7 +9,7 @@ import Table from "/@/components/g2plots/Table.vue";
 import Box from "/@/components/box/Box.vue";
 import BigNumber from "bignumber.js";
 import dayjs from "dayjs";
-import TagTemplate from "/@/hooks/three3d/lib/htmlComponents/tags/TagTemplate.vue";
+import Marker from "/@/hooks/three3d/lib/htmlComponents/tags/Marker.vue";
 
 const data1 = ref([
   {label: "广东省", value: 1932, percent: 0.7478887},
@@ -103,7 +103,7 @@ async function initTouristFrom() {
     </Box>
 
     <Box :height="400" title="区外客源城市排行">
-      <TagTemplate/>
+      <Marker/>
       <!--<div class="tw-h-full tw-flex-1 row-flex-center">-->
       <!--  <RadialBar class="tw-h-5/6 tw-w-5/6" :data="data1"/>-->
       <!--</div>-->

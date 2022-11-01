@@ -3,10 +3,12 @@ import {getBox3ByObject3D, getCenterByBox3, getSizeByBox3, mergeBufferGeometries
 import * as Three from "three";
 import BigNumber from "bignumber.js";
 import Component from "/@/hooks/three3d/lib/abstracts/Component";
+import Tag from "/@/hooks/three3d/lib/htmlComponents/tags/Tag";
 
 export default class MapLayer extends Component {
     lineGroup = new Three.Group()
     extrudeShareGroup = new Three.Group()
+    tagComponents: Tag[] = []
 
     lineMaterial = new Three.LineBasicMaterial({
         // color: 0x00cccc, //线条颜色
@@ -41,6 +43,11 @@ export default class MapLayer extends Component {
         this.map.center = center
         this.map.mapSize = size
         this.generateMap(this.map.featureObjects)
+    }
+
+    onUpdate() {
+        super.onUpdate();
+        this.tagComponents.forEach(v => v.onUpdate())
     }
 
     generateMap(featureObjects: IFeatureObject[], loop = true) {
@@ -103,6 +110,7 @@ export default class MapLayer extends Component {
         return mesh;
     }
 
+
     getGeometryByPoints(points: Three.Vector3[]) {
         return new Three.BufferGeometry().setFromPoints(points);
     }
@@ -114,6 +122,12 @@ export default class MapLayer extends Component {
         } else { //首尾顶点连线，轮廓闭合
             this.lineGroup.add(new Three.LineLoop(geometry, this.lineMaterial));
         }
+    }
+
+    drawAreaTag(box3: Three.Box3, properties: IFeatureProperties) {
+        const tag = new Tag(this.map, properties.name)
+        tag.onRender(getCenterByBox3(box3), properties)
+        return tag
     }
 
     drawExtrudeShareByGeometry(geometry: Three.BufferGeometry, properties: IFeatureProperties) {
@@ -131,6 +145,8 @@ export default class MapLayer extends Component {
 
         const mesh = new Three.Mesh(geometry, [material1, material2]); //网格模型对象
         const box3 = getBox3ByObject3D(mesh)
+        const tagComponent = this.drawAreaTag(box3, properties)
+        this.tagComponents.push(tagComponent)
         const planeMesh = this.drawPlaneTextureByBox3(box3, textureUrl)
         // const planeMesh2 = this.drawPlaneTextureByBox3(box3, '/geojson/贴图.png', 0.02)
         const shareGroup = new Three.Group()
