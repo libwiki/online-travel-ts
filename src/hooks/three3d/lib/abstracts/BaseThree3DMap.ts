@@ -8,7 +8,7 @@ import MapLayer from "/@/hooks/three3d/lib/components/MapLayer";
 import {IComponent, IFeatureObject} from "/@/hooks/three3d/lib/Interfaces";
 import {MapControls} from "three/examples/jsm/controls/OrbitControls";
 import {CSS3DRenderer} from "three/examples/jsm/renderers/CSS3DRenderer";
-import Tag from "/@/hooks/three3d/lib/htmlComponents/tags/Tag";
+import RayCasters from "/@/hooks/three3d/lib/components/RayCasters";
 
 export default class BaseThree3DMap extends EmptyComponent {
     el: HTMLElement
@@ -16,7 +16,6 @@ export default class BaseThree3DMap extends EmptyComponent {
     scene = new Three.Scene()
     mProjection = geoMercator()
     size = new Three.Vector3()
-    s = 1.6; //三维场景显示范围控制系数，系数越大，显示的范围越大
     center = new Three.Vector3();
     mapSize = new Three.Vector3();
     mapGroup = new Three.Group();
@@ -28,15 +27,17 @@ export default class BaseThree3DMap extends EmptyComponent {
     renderer: Three.WebGLRenderer
     css3DRenderer: CSS3DRenderer
     components: IComponent[] = [ // 组件
+        new MapLayer(this),
         new Helpers(this),
         new Lights(this),
-        new MapLayer(this),
+        new RayCasters(this),
     ]
 
     constructor(el?: HTMLElement) {
         super()
         this.el = el || document.body
         this.setSize(window.innerWidth, window.innerHeight)
+        this.mapGroup.name = 'mapGroup'
         this.camera = this.generateCamera()
         this.renderer = this.generateRenderer()
         this.css3DRenderer = this.generateCss3DRenderer()
@@ -45,28 +46,28 @@ export default class BaseThree3DMap extends EmptyComponent {
     }
 
     onStart() {
-        super.onStart()
         this.scene.add(this.mapGroup);
         this.components.forEach(v => v.onStart())
+        super.onStart()
     }
 
     onReady() {
-        super.onReady()
         this.components.forEach(v => v.onReady())
+        super.onReady()
     }
 
     onUpdate() {
-        super.onUpdate()
         requestAnimationFrame(this.onUpdate.bind(this));
         this.renderer.render(this.scene, this.camera)
         this.css3DRenderer.render(this.scene, this.camera)
         this.components.forEach(v => v.onUpdate())
         this.controls.update();
+        super.onUpdate()
     }
 
     onDispose() {
-        super.onDispose()
         this.components.forEach(v => v.onDispose())
+        super.onDispose()
     }
 
     setSize(width: number, height: number) {
@@ -74,8 +75,27 @@ export default class BaseThree3DMap extends EmptyComponent {
         this.size.y = height
     }
 
+
+    get minMapAxisValue() {
+        return Math.min(this.mapSize.x, this.mapSize.y)
+    }
+
+    get maxMapAxisValue() {
+        return Math.max(this.mapSize.x, this.mapSize.y)
+    }
+
+    get aspectMapRatio() {
+        if (this.mapSize.y === 0) {
+            return 0
+        }
+        return this.mapSize.x / this.mapSize.y
+    }
+
     // 窗口宽高比
     get aspectRatio() {
+        if (this.size.y === 0) {
+            return 0
+        }
         return this.size.x / this.size.y
     }
 
@@ -103,7 +123,7 @@ export default class BaseThree3DMap extends EmptyComponent {
 
     generateCamera() {
         const k = this.aspectRatio
-        const s = this.s
+        const s = 1.6
         // const camera = new Three.OrthographicCamera(-s * k, s * k, s, -s, 1, 1000);
         const camera = new Three.PerspectiveCamera(45, this.aspectRatio, 0.1, 2000);
         camera.position.z = 5;
@@ -116,14 +136,18 @@ export default class BaseThree3DMap extends EmptyComponent {
         // const controls = new MyControls(this.camera, this.renderer.domElement);
         // const controls = new OrbitControls(camera, renderer.domElement);
         controls.minPolarAngle = 0; // 向下翻转的角度
-        controls.maxPolarAngle = (Math.PI / 180) * 85; // 向上翻转的角度
+        controls.maxPolarAngle = (Math.PI / 180) * 65; // 向上翻转的角度
         // controls.minAzimuthAngle = 0;
         // controls.maxAzimuthAngle = 0;
+        // controls.enablePan = false; //  禁止平移
         controls.addEventListener('end', (e) => {
             // controls.object.up.setX(this.center.x)
             // controls.object.up.setY(this.center.y)
             // controls.object.up.setZ(this.center.z)
             // console.log(e, this.center, controls.object.up)
+            console.log(this.camera)
+            console.log(this.controls)
+            console.log(this.mapGroup)
 
         })
         return controls

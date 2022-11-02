@@ -59,7 +59,7 @@ const styles = computed(() => {
       bottom: px2rem((cssOptions.value.markerPoiHeight || 0) / 2 + (cssOptions.value.markerHeight || 0) + (cssOptions.value.markerLabelMargin || 0)),
     },
     labelContent: {
-      minWidth: px2rem((cssOptions.value.labelMarginLeft || 0) * 2 + (cssOptions.value.textXPadding || 0) * 2 + 100),
+      minWidth: px2rem((cssOptions.value.labelMarginLeft || 0) * 2 + (cssOptions.value.textXPadding || 0) * 2),
       height: cssOptions.value.labelHeight,
     },
     text: {
@@ -127,8 +127,6 @@ function onContextmenu(e: MouseEvent) {
       bottom: (@markerPoiHeight/2 + @markerHeight + @markerLabelMargin);
       left: 0;
       position: absolute;
-      width: auto;
-      height: auto;
 
       &.right {
         left: inherit;
@@ -136,26 +134,29 @@ function onContextmenu(e: MouseEvent) {
       }
 
       .label-content {
-        min-width: (@labelMarginLeft*2 + @textXPadding*2 + 100);
+        min-width: (@labelMarginLeft*2 + @textXPadding*2);
         height: @labelHeight;
         position: relative;
+        z-index: 0;
 
         &:before, &:after {
           position: absolute;
           content: "";
-          width: 50%;
           height: 100%;
           top: 0;
+          z-index: -1;
         }
 
         &:before {
           left: 0;
+          width: 70%;
           background: transparent url("/geojson/dahua/texture/label_bg_left_26.png") no-repeat left;
           background-size: auto 100%;
         }
 
         &:after {
           right: 0;
+          width: 35%;
           background: transparent url("/geojson/dahua/texture/label_bg_left_26.png") no-repeat right;
           background-size: auto 100%;
         }
@@ -178,14 +179,12 @@ function onContextmenu(e: MouseEvent) {
           line-height: @labelHeight - @arrowHeight;
           padding: 0 @textXPadding;
           text-align: center;
-          position: absolute;
-          top: 0;
-          left: 0;
           min-width: 100%;
-          width: auto;
           color: white;
-          z-index: 1;
-          font-size: 12px;
+          z-index: 10;
+          font-size: 14px;
+          font-weight: 500;
+          white-space: nowrap;
         }
       }
     }

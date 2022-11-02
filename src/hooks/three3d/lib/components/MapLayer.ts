@@ -6,6 +6,7 @@ import Component from "/@/hooks/three3d/lib/abstracts/Component";
 import Tag from "/@/hooks/three3d/lib/htmlComponents/tags/Tag";
 
 export default class MapLayer extends Component {
+    tagGroup = new Three.Group()
     lineGroup = new Three.Group()
     extrudeShareGroup = new Three.Group()
     tagComponents: Tag[] = []
@@ -34,6 +35,13 @@ export default class MapLayer extends Component {
         // metalness: 0.0, // 材质与金属的相似度
         // side: DoubleSide, //两面可见
     }); // 形状材质对象
+
+    onStart() {
+        super.onStart();
+        this.tagGroup.name = 'tagGroup'
+        this.lineGroup.name = 'lineGroup'
+        this.extrudeShareGroup.name = 'extrudeShareGroup'
+    }
 
     // 数据准备就绪
     onReady() {
@@ -71,6 +79,7 @@ export default class MapLayer extends Component {
         })
         this.map.mapGroup.add(this.lineGroup)
         this.map.mapGroup.add(this.extrudeShareGroup)
+        this.map.mapGroup.add(this.tagGroup)
         // this.drawBackgroundPlane(this.lineGroup)
     }
 
@@ -126,8 +135,9 @@ export default class MapLayer extends Component {
 
     drawAreaTag(box3: Three.Box3, properties: IFeatureProperties) {
         const tag = new Tag(this.map, properties.name)
-        tag.onRender(getCenterByBox3(box3), properties)
-        return tag
+        tag.onCreate(getCenterByBox3(box3), properties)
+        this.tagComponents.push(tag)
+        this.tagGroup.add(tag.object3d)
     }
 
     drawExtrudeShareByGeometry(geometry: Three.BufferGeometry, properties: IFeatureProperties) {
@@ -145,8 +155,8 @@ export default class MapLayer extends Component {
 
         const mesh = new Three.Mesh(geometry, [material1, material2]); //网格模型对象
         const box3 = getBox3ByObject3D(mesh)
-        const tagComponent = this.drawAreaTag(box3, properties)
-        this.tagComponents.push(tagComponent)
+        this.drawAreaTag(box3, properties)
+
         const planeMesh = this.drawPlaneTextureByBox3(box3, textureUrl)
         // const planeMesh2 = this.drawPlaneTextureByBox3(box3, '/geojson/贴图.png', 0.02)
         const shareGroup = new Three.Group()

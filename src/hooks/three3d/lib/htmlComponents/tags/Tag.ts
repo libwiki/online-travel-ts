@@ -6,15 +6,18 @@ import {Object3D, Vector3} from "three";
 import {ITagProps} from "/@/hooks/three3d/lib/htmlComponents/tags/interfaces";
 import {IFeatureProperties} from "/@/hooks/three3d/lib/Interfaces";
 
+const DEFAULT_SCALE_UNIT = 800
 export default class Tag extends Component {
-    object3d?: Object3D
+    object3d = new Object3D()
     tagInstance?: any
-    position?: Vector3
+    _position?: Vector3
     userData?: IFeatureProperties
+    scaleUnit = DEFAULT_SCALE_UNIT // 缩放单位
 
 
-    onRender(position?: Vector3, userData?: IFeatureProperties) {
+    onCreate(position?: Vector3, userData?: IFeatureProperties, scaleUnit = DEFAULT_SCALE_UNIT) {
         this.setPosition(position)
+        this.setScaleUnit(scaleUnit)
         const mountNode = document.createElement('div')
         document.body.appendChild(mountNode)
         const app = createApp(Marker);
@@ -23,27 +26,32 @@ export default class Tag extends Component {
         const object3d = new CSS3DSprite(tagInstance.$el)
         object3d.name = this.name
         object3d.up.copy(this.map.camera.up)
-        object3d.scale.copy(new Vector3(0.003, 0.003, 1))
-        object3d.position.copy(this.getPosition())
         this.object3d = object3d
         this.setUserData(userData)
-        this.map.scene.add(this.object3d)
-
     }
+
 
     setData(data: ITagProps) {
         this.tagInstance?.setProps(data)
     }
 
-    getPosition() {
-        if (this.position) {
-            return this.position
+    get position() {
+        if (this._position) {
+            return this._position
         }
         return this.map.center
     }
 
+    get scale() {
+        return new Vector3(this.map.minMapAxisValue / this.scaleUnit, this.map.minMapAxisValue / this.scaleUnit, 1)
+    }
+
     setPosition(position?: Vector3) {
-        this.position = position
+        this._position = position
+    }
+
+    setScaleUnit(scaleUnit = DEFAULT_SCALE_UNIT) {
+        this.scaleUnit = scaleUnit
     }
 
     setUserData(userData?: IFeatureProperties) {
@@ -57,16 +65,15 @@ export default class Tag extends Component {
     }
 
     onToggle(show: boolean) {
-        if (this.object3d) {
-            if (show && !this.object3d.parent) {
-                this.map.scene.add(this.object3d)
-            }
-            this.object3d.visible = show
+        if (show && !this.object3d.parent) {
+            this.map.scene.add(this.object3d)
         }
+        this.object3d.visible = show
     }
 
 
     onUpdate() {
-        this.object3d?.position.copy(this.getPosition())
+        this.object3d.scale.copy(this.scale)
+        this.object3d.position.copy(this.position)
     }
 }
