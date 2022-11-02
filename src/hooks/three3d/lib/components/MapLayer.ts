@@ -96,7 +96,7 @@ export default class MapLayer extends Component {
     }
 
     bindEvents() {
-        this.map.rayCasters.emitter.on(RayCasterEvents.pointermove, (ray: any) => {
+        this.map.rayCasters.emitter.on(RayCasterEvents.pointermove, (ray) => {
             this._handleShareCoverGroupPointEvents(RayCasterEvents.pointermove, ray)
         })
     }

@@ -3,8 +3,11 @@ import {Raycaster, Vector2} from "three";
 import mitt from "mitt";
 import {RayCasterEvents} from "/@/hooks/three3d/lib/Interfaces";
 
+type RayCasterEventType = {
+    [k in RayCasterEvents]: Raycaster
+}
 export default class RayCasters extends Component {
-    emitter = mitt()
+    emitter = mitt<RayCasterEventType>()
     pointermoveRayCaster = new Raycaster();
     pointerdownRayCaster = new Raycaster();
     pointerupRayCaster = new Raycaster();
