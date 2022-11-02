@@ -20,4 +20,11 @@ export interface IFeatureObject {
     properties: IFeatureProperties
 }
 
+// 射线组件的事件
+export enum RayCasterEvents {
+    pointermove = "pointermove",
+    pointerdown = "pointerdown",
+    pointerup = "pointerup",
+    contextmenu = "contextmenu",
+}
 

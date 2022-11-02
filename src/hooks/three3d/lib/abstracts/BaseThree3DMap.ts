@@ -1,6 +1,7 @@
 import EmptyComponent from "/@/hooks/three3d/lib/abstracts/EmptyComponent";
 import mitt from "mitt";
 import * as Three from "three";
+import {Vector2} from "three";
 import {geoMercator} from "d3-geo";
 import Helpers from "/@/hooks/three3d/lib/components/Helpers";
 import Lights from "/@/hooks/three3d/lib/components/Lights";
@@ -14,6 +15,8 @@ export default class BaseThree3DMap extends EmptyComponent {
     el: HTMLElement
     emitter = mitt()
     scene = new Three.Scene()
+    rayCasters: RayCasters;
+    pointer = new Vector2(); // 鼠标经过的点
     mProjection = geoMercator()
     size = new Three.Vector3()
     center = new Three.Vector3();
@@ -27,10 +30,9 @@ export default class BaseThree3DMap extends EmptyComponent {
     renderer: Three.WebGLRenderer
     css3DRenderer: CSS3DRenderer
     components: IComponent[] = [ // 组件
-        new MapLayer(this),
+        new MapLayer(this), // MapLayer组件为基础底图（比较特殊，必须先启动，只有地图启动了才能知道实际的center和底图mapSize）
         new Helpers(this),
         new Lights(this),
-        new RayCasters(this),
     ]
 
     constructor(el?: HTMLElement) {
@@ -42,18 +44,20 @@ export default class BaseThree3DMap extends EmptyComponent {
         this.renderer = this.generateRenderer()
         this.css3DRenderer = this.generateCss3DRenderer()
         this.controls = this.generateControls()
+        this.rayCasters = new RayCasters(this) // 射线组件（该组件在其它地方也用到故在此创建）
+        this.components.push(this.rayCasters)
         // this.scene.background = new Three.Color(0xffffff)
     }
 
     onStart() {
+        super.onStart()
         this.scene.add(this.mapGroup);
         this.components.forEach(v => v.onStart())
-        super.onStart()
     }
 
     onReady() {
-        this.components.forEach(v => v.onReady())
         super.onReady()
+        this.components.forEach(v => v.onReady())
     }
 
     onUpdate() {
@@ -145,9 +149,9 @@ export default class BaseThree3DMap extends EmptyComponent {
             // controls.object.up.setY(this.center.y)
             // controls.object.up.setZ(this.center.z)
             // console.log(e, this.center, controls.object.up)
-            console.log(this.camera)
-            console.log(this.controls)
-            console.log(this.mapGroup)
+            // console.log(this.camera)
+            // console.log(this.controls)
+            // console.log(this.mapGroup)
 
         })
         return controls
