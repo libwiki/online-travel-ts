@@ -8,7 +8,7 @@ export default class Three3DMap extends BaseThree3DMap {
         super.onStart();
         this.onUpdate()
     }
-
+    // /geojson/dahua/geo.json
     loadJson(jsonUrl: string = '/geojson/dahua/geo.json') {
         this.fileLoader.load(jsonUrl, (data: any) => {
             if (isString(data)) {

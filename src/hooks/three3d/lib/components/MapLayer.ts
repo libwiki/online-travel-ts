@@ -87,7 +87,7 @@ export default class MapLayer extends Component {
         this.map.mapGroup.add(this.extrudeShareGroup)
         this.map.mapGroup.add(this.tagGroup)
         this.bindEvents(); // 绑定射线事件
-        
+
         const box3 = getBox3ByObject3D(this.map.mapGroup)
         const center = getCenterByBox3(box3)
         const mapSize = getSizeByBox3(box3)
@@ -105,9 +105,14 @@ export default class MapLayer extends Component {
     protected _handleShareCoverGroupPointEvents(eventType: RayCasterEvents, ray: Raycaster) {
         const objects = ray.intersectObjects<Three.Mesh>(this.shareGroup.children, false)
         if (objects.length > 0) {
-            const name = objects[0].object.name;
-            const panel = this.shareCoverGroup.children.find(v => v.name === name) as Three.Mesh
-            this.toggleHoverPanel(panel)
+            if (this.shareCoverGroup.children.length > 0) { // 贴图是通过另外的平面覆盖在形状面板上的
+                const name = objects[0].object.name;
+                const panel = this.shareCoverGroup.children.find(v => v.name === name) as Three.Mesh
+                this.toggleHoverPanel(panel)
+            } else { // 不存在贴图(直接设置形状面板的hover状态)
+                this.toggleHoverPanel(objects[0].object)
+            }
+
         } else {
             this.toggleHoverPanel()
         }
@@ -144,7 +149,7 @@ export default class MapLayer extends Component {
         const size = getSizeByBox3(box3).multiply(new Three.Vector3(multiply, multiply, multiply))
         const center = getCenterByBox3(box3)
         const textureUrl = `/geojson/dahua/texture/bg.png`;
-        const texture = this.map.textureLoader.load(textureUrl)
+        const texture = this.map.loadTexture(textureUrl)
         texture.wrapS = Three.RepeatWrapping;
         texture.wrapT = Three.RepeatWrapping;
         const material = this.standardMaterial.clone();
@@ -178,7 +183,7 @@ export default class MapLayer extends Component {
         // material1.transparent = true
         const texture2Url = `/geojson/dahua/texture/extrude_bg.png`;
         // const texture2Url = `/geojson/贴图.png`;
-        const texture = this.map.textureLoader.load(texture2Url)
+        const texture = this.map.loadTexture(texture2Url)
         texture.wrapS = Three.RepeatWrapping
         texture.wrapT = Three.RepeatWrapping
         const material2 = this.lambertMaterial.clone()
@@ -209,26 +214,30 @@ export default class MapLayer extends Component {
     }
 
     // 生成边界贴图
-    drawPlaneTextureByBox3(box3: Three.Box3, properties: IFeatureProperties, zOffset = 0) {
-        const textureUrl = `/geojson/dahua/texture/${properties.name}.png`;
-        const texture = this.map.textureLoader.load(textureUrl)
-        texture.wrapS = Three.RepeatWrapping;
-        texture.wrapT = Three.RepeatWrapping;
-        const material = this.standardMaterial.clone();
-        material.map = texture
-        material.transparent = true
-        material.alphaTest = 0.1 //  (解决闪烁的问题)
-        material.depthTest = false // 关闭深度测试(解决闪烁的问题，renderOrder等目前均出现些问题)
+    async drawPlaneTextureByBox3(box3: Three.Box3, properties: IFeatureProperties, zOffset = 0) {
+        try {
+            const textureUrl = `/geojson/dahua/texture/${properties.name}.png`;
+            const texture = await this.map.loadTextureAsync(textureUrl)
+            texture.wrapS = Three.RepeatWrapping;
+            texture.wrapT = Three.RepeatWrapping;
+            const material = this.standardMaterial.clone();
+            material.map = texture
+            material.transparent = true
+            material.alphaTest = 0.1 //  (解决闪烁的问题)
+            material.depthTest = false // 关闭深度测试(解决闪烁的问题，renderOrder等目前均出现些问题)
 
-        const size = getSizeByBox3(box3)
-        const center = getCenterByBox3(box3)
-        const geometry = new Three.PlaneGeometry(size.x, size.y); //默认在XOY平面上
-        const mesh = new Three.Mesh(geometry, material);
-        mesh.name = properties.name;
-        mesh.userData = properties;
-        mesh.position.set(center.x, center.y, BigNumber(size.z).plus(zOffset).toNumber());//设置mesh位置
-        // mesh.renderOrder = 100; // 设置贴图渲染排序（解决模型重合闪烁的问题）
-        this.shareCoverGroup.add(mesh)
+            const size = getSizeByBox3(box3)
+            const center = getCenterByBox3(box3)
+            const geometry = new Three.PlaneGeometry(size.x, size.y); //默认在XOY平面上
+            const mesh = new Three.Mesh(geometry, material);
+            mesh.name = properties.name;
+            mesh.userData = properties;
+            mesh.position.set(center.x, center.y, BigNumber(size.z).plus(zOffset).toNumber());//设置mesh位置
+            // mesh.renderOrder = 100; // 设置贴图渲染排序（解决模型重合闪烁的问题）
+            this.shareCoverGroup.add(mesh)
+        } catch (e) {
+
+        }
     }
 
     getExtrudeGeometry(shapes: Three.Shape | Three.Shape[]) {

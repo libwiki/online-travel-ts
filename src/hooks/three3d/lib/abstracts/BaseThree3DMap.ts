@@ -19,8 +19,8 @@ export default class BaseThree3DMap extends EmptyComponent {
     pointer = new Vector2(); // 鼠标经过的点
     mProjection = geoMercator()
     size = new Three.Vector3()
-    center = new Three.Vector3();
-    mapSize = new Three.Vector3();
+    _center = new Three.Vector3();
+    _mapSize = new Three.Vector3();
     mapGroup = new Three.Group();
     fileLoader = new Three.FileLoader();
     textureLoader = new Three.TextureLoader()
@@ -79,6 +79,22 @@ export default class BaseThree3DMap extends EmptyComponent {
         this.size.y = height
     }
 
+    get center() {
+        return this._center
+    }
+
+    set center(val: Three.Vector3) {
+        this._center = val
+    }
+
+    get mapSize() {
+        return this._mapSize
+    }
+
+    set mapSize(val: Three.Vector3) {
+        this._mapSize = val
+        this.camera.position.z = this.maxMapAxisValue * 2
+    }
 
     get minMapAxisValue() {
         return Math.min(this.mapSize.x, this.mapSize.y)
@@ -102,6 +118,32 @@ export default class BaseThree3DMap extends EmptyComponent {
         }
         return this.size.x / this.size.y
     }
+
+    /**
+     * 加载纹理 （默认会忽略错误）
+     * @param textureUrl
+     */
+    loadTexture(textureUrl: string): Three.Texture {
+        return this.textureLoader.load(textureUrl)
+    }
+
+    /**
+     * 加载纹理 仅当纹理加载成功时会返回，当加载失败时立即报错
+     * @param textureUrl {string} 纹理路径（绝对路径）
+     */
+    async loadTextureAsync(textureUrl: string): Promise<Three.Texture> {
+        return new Promise((resolve, reject) => {
+            const texture = this.textureLoader.load(textureUrl, (t) => {
+                resolve(t)
+            }, (progress) => {
+                // console.log('loadTexture progress', progress)
+            }, (e) => {
+                // console.log('loadTexture err:', e)
+                reject(e)
+            })
+        })
+    }
+
 
     generateRenderer() {
         const renderer = new Three.WebGLRenderer({
@@ -130,7 +172,7 @@ export default class BaseThree3DMap extends EmptyComponent {
         const s = 1.6
         // const camera = new Three.OrthographicCamera(-s * k, s * k, s, -s, 1, 1000);
         const camera = new Three.PerspectiveCamera(45, this.aspectRatio, 0.1, 2000);
-        camera.position.z = 5;
+        camera.position.z = 0;
         camera.up = new Three.Vector3(0, 0, 1); // 使controls的水平旋转轴线为z轴
         return camera
     }
