@@ -3,7 +3,7 @@ import {Coordinate} from "/@/@types/geoJson";
 export interface IComponent {
     onStart(): void // 开始
     onReady(): void // 数据准备就绪
-    onUpdate(): void // 每一次更新
+    onUpdate(deltaTime: number): void // 每一次更新
     onDispose(): void // 组件卸载
 }
 
@@ -26,5 +26,11 @@ export enum RayCasterEvents {
     pointerdown = "pointerdown",
     pointerup = "pointerup",
     contextmenu = "contextmenu",
+}
+
+
+// 标签组件的事件
+export enum TagEvents {
+    onClick = "onClick", // 标签点击
 }
 

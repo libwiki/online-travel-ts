@@ -5,6 +5,7 @@ import _ from "lodash";
 import {ITagCss} from "/@/hooks/three3d/lib/htmlComponents/tags/interfaces";
 
 interface IProps {
+  name?: string,
   text?: string | number,
   textAlign?: string
   flexRight?: boolean
@@ -13,6 +14,7 @@ interface IProps {
 
 // 各个参数默认值参考style中的变量，均是以设计图为准
 const props = withDefaults(defineProps<IProps>(), {
+  name: '',
   text: '',
   textAlign: 'center',
   flexRight: false,
@@ -36,7 +38,7 @@ function setProps(data: IProps) {
   fillOptions.value = data
 }
 
-defineExpose({setProps})
+
 const options = computed(() => {
   return _.cloneDeep({...toRaw(props), ...toRaw(fillOptions.value)})
 })
@@ -74,13 +76,28 @@ const styles = computed(() => {
 function onContextmenu(e: MouseEvent) {
   e.preventDefault();
 }
+
+const emits = defineEmits<{
+  (event: 'click', data: { e: MouseEvent, name: string }): void,
+}>()
+
+function onLabelClick(e: MouseEvent) {
+  e.preventDefault()
+  e.stopPropagation()
+  emits("click", {e, name: props.name})
+}
+
+defineExpose({setProps})
 </script>
 
 <template>
   <div class="marker-container " @contextmenu.stop="onContextmenu">
     <div :style="styles.point" class="point">
       <div :style="styles.marker" class="marker"></div>
-      <div :style="styles.labelBox" :class="`label-box  ${options.flexRight?'right':''}`">
+      <div
+          @click="onLabelClick"
+          :style="styles.labelBox"
+          :class="`label-box  ${options.flexRight?'right':''}`">
         <div :style="styles.labelContent" :class="`label-content  ${options.flexRight?'right':''}`">
           <div :style="styles.text" class="text">{{ options.text }}</div>
         </div>
@@ -127,6 +144,7 @@ function onContextmenu(e: MouseEvent) {
       bottom: (@markerPoiHeight/2 + @markerHeight + @markerLabelMargin);
       left: 0;
       position: absolute;
+      cursor: pointer;
 
       &.right {
         left: inherit;

@@ -10,30 +10,31 @@ import {IComponent, IFeatureObject} from "/@/hooks/three3d/lib/Interfaces";
 import {MapControls} from "three/examples/jsm/controls/OrbitControls";
 import {CSS3DRenderer} from "three/examples/jsm/renderers/CSS3DRenderer";
 import RayCasters from "/@/hooks/three3d/lib/components/RayCasters";
+import {getCenterByBox3, getSizeByBox3} from "/@/hooks/three3d/lib/utils";
+import BackgroundPlane from "/@/hooks/three3d/lib/components/BackgroundPlane";
 
 export default class BaseThree3DMap extends EmptyComponent {
     el: HTMLElement
+    _running = false // 正在启动 （false时将停止onUpdate的帧刷新）
     emitter = mitt()
     scene = new Three.Scene()
-    rayCasters: RayCasters;
-    pointer = new Vector2(); // 鼠标经过的点
-    mProjection = geoMercator()
-    size = new Three.Vector3()
-    _center = new Three.Vector3();
-    _mapSize = new Three.Vector3();
+    rayCasters: RayCasters; // 射线组件（管理地图中的除了html元素之外的用户事件处理，html组件元素会独立管理事件处理）
+    pointer = new Vector2(); // 当前鼠标经过的点（rayCasters组件中使用到）
+    mProjection = geoMercator();
+    size = new Three.Vector3(); // 渲染器大小
+    _mapBox3 = new Three.Box3(); // 地图的box3盒子
+    _center = new Three.Vector3(); // 地图的盒子中心点
+    _mapSize = new Three.Vector3(); // 地图的盒子大小
     mapGroup = new Three.Group();
     fileLoader = new Three.FileLoader();
     textureLoader = new Three.TextureLoader()
-    featureObjects: IFeatureObject[] = []
+    featureObjects: IFeatureObject[] = []; // 加载的geoJson数据
+    components: IComponent[] = []; // 组件
     camera: Three.Camera
     controls: MapControls
     renderer: Three.WebGLRenderer
     css3DRenderer: CSS3DRenderer
-    components: IComponent[] = [ // 组件
-        new MapLayer(this), // MapLayer组件为基础底图（比较特殊，必须先启动，只有地图启动了才能知道实际的center和底图mapSize）
-        new Helpers(this),
-        new Lights(this),
-    ]
+
 
     constructor(el?: HTMLElement) {
         super()
@@ -44,15 +45,26 @@ export default class BaseThree3DMap extends EmptyComponent {
         this.renderer = this.generateRenderer()
         this.css3DRenderer = this.generateCss3DRenderer()
         this.controls = this.generateControls()
+        this.registerComponents()
         this.rayCasters = new RayCasters(this) // 射线组件（该组件在其它地方也用到故在此创建）
         this.components.push(this.rayCasters)
         // this.scene.background = new Three.Color(0xffffff)
+    }
+
+    // 注册默认组件
+    protected registerComponents() {
+        this.components.push(new MapLayer(this)) // MapLayer组件为基础底图（比较特殊，必须先启动，只有地图启动了才能知道实际的center和底图mapSize）
+        this.components.push(new Helpers(this))
+        this.components.push(new Lights(this))
+        this.components.push(new BackgroundPlane(this))
     }
 
     onStart() {
         super.onStart()
         this.scene.add(this.mapGroup);
         this.components.forEach(v => v.onStart())
+        this.isRunning = true
+        this.onUpdate(Date.now())
     }
 
     onReady() {
@@ -60,23 +72,58 @@ export default class BaseThree3DMap extends EmptyComponent {
         this.components.forEach(v => v.onReady())
     }
 
-    onUpdate() {
-        requestAnimationFrame(this.onUpdate.bind(this));
-        this.renderer.render(this.scene, this.camera)
-        this.css3DRenderer.render(this.scene, this.camera)
-        this.components.forEach(v => v.onUpdate())
-        this.controls.update();
-        super.onUpdate()
+    onUpdate(deltaTime: number) {
+        if (this.isRunning) { // 是否正在启动
+            requestAnimationFrame(this.onUpdate.bind(this));
+            this.renderer.render(this.scene, this.camera)
+            this.css3DRenderer.render(this.scene, this.camera)
+            this.components.forEach(v => v.onUpdate(deltaTime))
+            this.controls.update();
+            super.onUpdate(Date.now())
+        }
+
     }
 
     onDispose() {
         this.components.forEach(v => v.onDispose())
+        this.mapGroup.clear() // 清空地图数据
+        this.featureObjects = [] // 清空加载的geoJson数据
         super.onDispose()
+        requestAnimationFrame(() => { // 在下一帧时彻底停止帧刷新
+            this.isRunning = false;
+        })
+
     }
 
     setSize(width: number, height: number) {
         this.size.x = width
         this.size.y = height
+    }
+
+    get isRunning() {
+        return this._running
+    }
+
+    // 正在启动 （false时将停止onUpdate的帧刷新）
+    set isRunning(val: boolean) {
+        const oldVal = this._running
+        this._running = val
+        if (val && val !== oldVal) { // 重新启动
+            this.onUpdate(Date.now())
+        }
+
+    }
+
+    get mapBox3() {
+        return this._mapBox3
+    }
+
+    // 设置mapBox3时会自动设置center和mapSize
+    set mapBox3(box3: Three.Box3) {
+        this._mapBox3 = box3
+        this.mapSize = getSizeByBox3(box3)
+        this.center = getCenterByBox3(box3)
+
     }
 
     get center() {

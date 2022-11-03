@@ -9,6 +9,10 @@ export function useThree3d(el: HTMLElement) {
         },
         loadJson() {
             map.loadJson()
+            // setTimeout(() => {
+            //     map.loadJson("https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json")
+            // }, 2000)
         },
+
     }
 }

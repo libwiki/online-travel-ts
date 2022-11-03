@@ -16,7 +16,7 @@ export default class Component implements IComponent {
     onReady(): void {
     }
 
-    onUpdate(): void {
+    onUpdate(deltaTime:number): void {
     }
 
     onDispose(): void {

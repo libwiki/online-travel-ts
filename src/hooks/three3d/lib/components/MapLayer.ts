@@ -58,9 +58,15 @@ export default class MapLayer extends Component {
         this.generateMap(this.map.featureObjects)
     }
 
-    onUpdate() {
-        super.onUpdate();
-        this.tagComponents.forEach(v => v.onUpdate())
+    onUpdate(deltaTime: number) {
+        super.onUpdate(deltaTime);
+        this.tagComponents.forEach(v => v.onUpdate(deltaTime))
+    }
+
+    onDispose() {
+        super.onDispose();
+        this.tagComponents.forEach(v => v.onDispose())
+        this.tagComponents = []
     }
 
     generateMap(featureObjects: IFeatureObject[], loop = true) {
@@ -86,13 +92,11 @@ export default class MapLayer extends Component {
         this.map.mapGroup.add(this.lineGroup)
         this.map.mapGroup.add(this.extrudeShareGroup)
         this.map.mapGroup.add(this.tagGroup)
-        this.bindEvents(); // 绑定射线事件
 
-        const box3 = getBox3ByObject3D(this.map.mapGroup)
-        const center = getCenterByBox3(box3)
-        const mapSize = getSizeByBox3(box3)
-        this.map.center = center
-        this.map.mapSize = mapSize
+        // 设置地图的整体box3盒子大小（内部会自动设置center和mapSize）
+        this.map.mapBox3 = getBox3ByObject3D(this.map.mapGroup)
+
+        this.bindEvents(); // 绑定射线事件
     }
 
     bindEvents() {
@@ -186,9 +190,10 @@ export default class MapLayer extends Component {
         const texture = this.map.loadTexture(texture2Url)
         texture.wrapS = Three.RepeatWrapping
         texture.wrapT = Three.RepeatWrapping
+        texture.repeat.set(100, 1)
         const material2 = this.lambertMaterial.clone()
-        // material2.map = texture;
-        // material2.transparent = true;
+        material2.map = texture;
+        material2.transparent = true;
 
         const mesh = new Three.Mesh(geometry, [material1, material2]); //网格模型对象
         mesh.name = properties.name;
