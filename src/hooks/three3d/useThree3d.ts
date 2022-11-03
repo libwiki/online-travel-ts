@@ -5,10 +5,8 @@ export function useThree3d(el: HTMLElement) {
     const map = new Three3DMap(el)
     const _autoReboot = ref<boolean>(true)
     onMounted(() => {
-        console.log('onMounted')
         if (_autoReboot.value) {
             map.onStart()
-            console.log('onMounted _autoReboot')
             map.onRenderByGeoJson()
             // setTimeout(() => {
             //     map.loadJson("https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json")
@@ -16,7 +14,6 @@ export function useThree3d(el: HTMLElement) {
         }
     })
     onUnmounted(() => {
-        console.log('onUnmounted')
         map.onDispose()
     })
     return {
