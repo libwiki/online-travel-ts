@@ -7,7 +7,7 @@ import {
     PointLight,
     PointLightHelper,
     SpotLight,
-    SpotLightHelper,
+    SpotLightHelper, SpotLightShadow,
     Vector3
 } from "three";
 import Component from "/@/hooks/three3d/lib/abstracts/Component";
@@ -39,6 +39,16 @@ export default class Lights extends Component {
             const helper = new SpotLightHelper(light, 1);
             this.lightGroup.add(helper);
         }
+        if (this.map.debug.castShadow) { // 开启阴影
+            light.castShadow = true
+            light.receiveShadow = true
+            // light.shadow.mapSize.width = 5112;  // default
+            // light.shadow.mapSize.height = 5112; // default
+            // light.shadow.camera.near = 0.5;    // default
+            // light.shadow.camera.far = 5100      // default
+            // light.shadow.focus = 11;            // default
+
+        }
         this.lightGroup.add(light);
     }
 
@@ -61,6 +71,18 @@ export default class Lights extends Component {
         if (this.map.debug.lightDebug) {
             const helper = new PointLightHelper(light, 1);
             this.lightGroup.add(helper);
+        }
+        if (this.map.debug.castShadow) { // 开启阴影
+            light.castShadow = true
+            light.receiveShadow = true
+            // const shadow = new SpotLightShadow(this.map.camera)
+            // light.shadow = shadow
+            // light.shadow.mapSize.width = 5112;  // default
+            // light.shadow.mapSize.height = 5112; // default
+            // light.shadow.camera.near = 0.5;    // default
+            // light.shadow.camera.far = 5100      // default
+            // light.shadow.focus = 11;            // default
+
         }
         this.lightGroup.add(light);
     }

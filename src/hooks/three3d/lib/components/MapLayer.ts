@@ -198,6 +198,8 @@ export default class MapLayer extends Component {
         const mesh = new Three.Mesh(geometry, [material1, material2]); //网格模型对象
         mesh.name = properties.name;
         mesh.userData = properties;
+        mesh.castShadow = this.map.debug.castShadow || false;
+        mesh.receiveShadow = this.map.debug.castShadow || false;
         const box3 = getBox3ByObject3D(mesh)
         this.drawAreaTag(box3, properties)
         this.drawPlaneTextureByBox3(box3, properties)

@@ -59,6 +59,7 @@ export default class BackgroundPlane extends Component {
         const mesh = new Three.Mesh(geometry, material);
         mesh.position.set(center.x, center.y, 0);//设置mesh位置
         mesh.name = name
+        mesh.receiveShadow = this.map.debug.castShadow || false
 
         this.backgroundPlaneGroup.add(mesh)
     }

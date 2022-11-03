@@ -221,6 +221,7 @@ export default class BaseThree3DMap extends EmptyComponent {
         const renderer = new Three.WebGLRenderer({
             antialias: true,     //抗锯齿
         });
+        renderer.shadowMap.enabled = this.debug.castShadow || false
         renderer.setPixelRatio(window.devicePixelRatio);
         renderer.setSize(this.size.x, this.size.y);
         this.el.appendChild(renderer.domElement);

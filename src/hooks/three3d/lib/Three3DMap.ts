@@ -8,7 +8,7 @@ export default class Three3DMap extends BaseThree3DMap {
     private tryRunning = 0;
 
     // /geojson/dahua/geo.json
-    loadJson(jsonUrl: string = '/geojson/dahua/geo.json') {
+    onRenderByGeoJson(geoJsonUrl: string = '/geojson/dahua/geo.json') {
         if (this.isRunning) { // 当前正在运行中
             this.onDispose(); // 先卸载旧地图，下一帧重新启动
             if (this.tryRunning >= MaxTryRunning) {
@@ -16,14 +16,14 @@ export default class Three3DMap extends BaseThree3DMap {
             }
             requestAnimationFrame(() => {
                 this.tryRunning++
-                this.loadJson(jsonUrl); // 重新启动
+                this.onRenderByGeoJson(geoJsonUrl); // 重新启动
             })
             return
         } else { // 当前已经停止,需要重新启动帧刷新
             this.tryRunning = 0;
             this.isRunning = true
         }
-        this.fileLoader.load(jsonUrl, (data: any) => {
+        this.fileLoader.load(geoJsonUrl, (data: any) => {
             if (isString(data)) {
                 try {
                     data = JSON.parse(data)
