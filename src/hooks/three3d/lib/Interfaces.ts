@@ -7,6 +7,14 @@ export interface IComponent {
     onDispose(): void // 组件卸载
 }
 
+export interface IThree3DMapDebug {
+    lightDebug?: boolean, // 灯光调试
+    gridDebug?: boolean, // 网格调试
+    axesDebug?: boolean, // 坐标轴调试
+    polarAngleDebug?: boolean, // 上下翻转调试（开启后无死角翻转）
+    enablePan?: boolean, // 左右移动（开启后可拖动）
+    castShadow?: boolean, // 开启阴影
+}
 
 export interface IFeatureProperties {
     name: string,

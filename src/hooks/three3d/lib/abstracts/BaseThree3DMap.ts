@@ -1,12 +1,12 @@
 import EmptyComponent from "/@/hooks/three3d/lib/abstracts/EmptyComponent";
 import mitt from "mitt";
 import * as Three from "three";
-import {Vector2} from "three";
+import {BoxGeometry, Mesh, MeshPhongMaterial, Vector2} from "three";
 import {geoMercator} from "d3-geo";
 import Helpers from "/@/hooks/three3d/lib/components/Helpers";
 import Lights from "/@/hooks/three3d/lib/components/Lights";
 import MapLayer from "/@/hooks/three3d/lib/components/MapLayer";
-import {IComponent, IFeatureObject} from "/@/hooks/three3d/lib/Interfaces";
+import {IComponent, IFeatureObject, IThree3DMapDebug} from "/@/hooks/three3d/lib/Interfaces";
 import {MapControls} from "three/examples/jsm/controls/OrbitControls";
 import {CSS3DRenderer} from "three/examples/jsm/renderers/CSS3DRenderer";
 import RayCasters from "/@/hooks/three3d/lib/components/RayCasters";
@@ -22,6 +22,7 @@ export default class BaseThree3DMap extends EmptyComponent {
     pointer = new Vector2(); // 当前鼠标经过的点（rayCasters组件中使用到）
     mProjection = geoMercator();
     size = new Three.Vector3(); // 渲染器大小
+    centerCube = new Three.Mesh(new BoxGeometry(0, 0, 0), new Three.MeshBasicMaterial()); // 中心点的正方形（目前暂时仅用于光源的方向指向）
     _mapBox3 = new Three.Box3(); // 地图的box3盒子
     _center = new Three.Vector3(); // 地图的盒子中心点
     _mapSize = new Three.Vector3(); // 地图的盒子大小
@@ -34,6 +35,14 @@ export default class BaseThree3DMap extends EmptyComponent {
     controls: MapControls
     renderer: Three.WebGLRenderer
     css3DRenderer: CSS3DRenderer
+    protected _debug: IThree3DMapDebug = {
+        lightDebug: false, // 灯光调试
+        gridDebug: true, // 网格调试
+        axesDebug: true, // 坐标轴调试
+        polarAngleDebug: false, // 上下翻转调试（开启后无死角翻转）
+        enablePan: false, // 左右移动（开启后可拖动）
+        castShadow: true, // 开启阴影
+    }
 
 
     constructor(el?: HTMLElement) {
@@ -41,6 +50,8 @@ export default class BaseThree3DMap extends EmptyComponent {
         this.el = el || document.body
         this.setSize(window.innerWidth, window.innerHeight)
         this.mapGroup.name = 'mapGroup'
+        this.centerCube.visible = false
+        this.centerCube.name = 'centerCube'
         this.camera = this.generateCamera()
         this.renderer = this.generateRenderer()
         this.css3DRenderer = this.generateCss3DRenderer()
@@ -62,6 +73,7 @@ export default class BaseThree3DMap extends EmptyComponent {
     onStart() {
         super.onStart()
         this.scene.add(this.mapGroup);
+        this.scene.add(this.centerCube);
         this.components.forEach(v => v.onStart())
         this.isRunning = true
         this.onUpdate(Date.now())
@@ -100,6 +112,18 @@ export default class BaseThree3DMap extends EmptyComponent {
         this.size.y = height
     }
 
+    get debug() {
+        return this._debug
+    }
+
+    set debug(val: IThree3DMapDebug) {
+        this._debug = {
+            ...this._debug,
+            ...val,
+        }
+
+    }
+
     get isRunning() {
         return this._running
     }
@@ -131,6 +155,7 @@ export default class BaseThree3DMap extends EmptyComponent {
     }
 
     set center(val: Three.Vector3) {
+        this.centerCube.position.copy(val)
         this._center = val
     }
 
@@ -228,11 +253,13 @@ export default class BaseThree3DMap extends EmptyComponent {
         const controls = new MapControls(this.camera, this.renderer.domElement);
         // const controls = new MyControls(this.camera, this.renderer.domElement);
         // const controls = new OrbitControls(camera, renderer.domElement);
-        controls.minPolarAngle = 0; // 向下翻转的角度
-        controls.maxPolarAngle = (Math.PI / 180) * 65; // 向上翻转的角度
+        if (!this.debug.polarAngleDebug) { // 没有开启控制debug
+            controls.minPolarAngle = 0; // 向下翻转的角度
+            controls.maxPolarAngle = (Math.PI / 180) * 65; // 向上翻转的角度
+        }
         // controls.minAzimuthAngle = 0;
         // controls.maxAzimuthAngle = 0;
-        // controls.enablePan = false; //  禁止平移
+        controls.enablePan = this.debug.enablePan || false; //  禁止平移
         controls.addEventListener('end', (e) => {
             // controls.object.up.setX(this.center.x)
             // controls.object.up.setY(this.center.y)
