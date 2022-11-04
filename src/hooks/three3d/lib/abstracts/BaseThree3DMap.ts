@@ -82,7 +82,7 @@ export default class BaseThree3DMap extends EmptyComponent {
         this.components.push(new MapAreaLine(this))
         this.components.push(new Helpers(this))
         this.components.push(new Lights(this))
-        // this.components.push(new BackgroundPlane(this))
+        this.components.push(new BackgroundPlane(this))
     }
 
     onStart() {
@@ -101,12 +101,14 @@ export default class BaseThree3DMap extends EmptyComponent {
 
     onUpdate(deltaTime: number) {
         if (this.isRunning) { // 是否正在启动
-            requestAnimationFrame(this.onUpdate.bind(this));
+            requestAnimationFrame(() => {
+                this.onUpdate(Date.now())
+            });
             this.renderer.render(this.scene, this.camera)
             this.css3DRenderer.render(this.scene, this.camera)
             this.components.forEach(v => v.onUpdate(deltaTime))
             this.controls.update();
-            super.onUpdate(Date.now())
+            super.onUpdate(deltaTime)
         }
 
     }
@@ -136,7 +138,7 @@ export default class BaseThree3DMap extends EmptyComponent {
 
     // 地图区域线段宽度
     get mapAreaLineWidth() {
-        return this.minMapAxisValue / 1000;
+        return this.minMapAxisValue / 2000;
     }
 
     // 区域线段的z轴高度 (地图拉伸高度 + offset)

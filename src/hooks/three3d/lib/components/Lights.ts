@@ -12,6 +12,7 @@ import {
 } from "three";
 import Component from "/@/hooks/three3d/lib/abstracts/Component";
 
+// 灯光相关（光源、投影、光源助手等）
 export default class Lights extends Component {
     protected lightColor = new Color(0xffffff)
     protected lightGroup = new Group()

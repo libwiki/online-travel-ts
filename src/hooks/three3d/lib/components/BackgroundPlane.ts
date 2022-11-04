@@ -13,6 +13,7 @@ interface ITorusOption {
     center?: Three.Vector3,
 }
 
+// 底图下的背景图
 export default class BackgroundPlane extends Component {
     backgroundPlaneGroup = new Three.Group()
 

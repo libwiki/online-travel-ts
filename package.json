@@ -10,6 +10,7 @@
   "dependencies": {
     "@antv/g2plot": "^2.4.20",
     "@tailwindcss/nesting": "^0.0.0-insiders.565cd3e",
+    "@tweenjs/tween.js": "^18.6.4",
     "axios": "^0.27.2",
     "bignumber.js": "^9.1.0",
     "d3-geo": "^3.0.1",

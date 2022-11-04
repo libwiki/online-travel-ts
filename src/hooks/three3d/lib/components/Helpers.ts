@@ -1,6 +1,7 @@
 import {AxesHelper, GridHelper, Group} from "three";
 import Component from "/@/hooks/three3d/lib/abstracts/Component";
 
+// 调试助手 （网格平面、坐标轴等）
 export default class Helpers extends Component {
     helpersGroup = new Group()
 

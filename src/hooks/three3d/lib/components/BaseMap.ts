@@ -4,6 +4,7 @@ import * as Three from "three";
 import {getBox3ByObject3D, mergeBufferGeometries} from "/@/hooks/three3d/lib/utils";
 
 /**
+ * 底图
  * 实际上底图形状并不需要渲染
  * 该组件的组要作用是计算实际形状的包围盒Box3、以及渲染中心点center、渲染大小mapSize等
  */

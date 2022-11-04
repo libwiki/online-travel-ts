@@ -7,6 +7,7 @@ import Component from "/@/hooks/three3d/lib/abstracts/Component";
 import Tag from "/@/hooks/three3d/lib/htmlComponents/tags/Tag";
 import _ from "lodash";
 
+// 整体的区域地图形状以及贴图
 export default class MapLayer extends Component {
     tagGroup = new Three.Group()
     shareGroup = new Three.Group()

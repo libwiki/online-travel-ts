@@ -6,6 +6,7 @@ import {RayCasterEvents} from "/@/hooks/three3d/lib/Interfaces";
 type RayCasterEventType = {
     [k in RayCasterEvents]: Raycaster
 }
+// 射线处理（处理模型的点击事件相关 注：html模型除外）
 export default class RayCasters extends Component {
     emitter = mitt<RayCasterEventType>()
     pointermoveRayCaster = new Raycaster();
