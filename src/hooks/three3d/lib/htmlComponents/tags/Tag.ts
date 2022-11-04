@@ -11,6 +11,8 @@ const DEFAULT_SCALE_UNIT = 800; // 默认的缩放比例
 type TagEventType = {
     [k in TagEvents]: { e: MouseEvent, name: string }
 }
+
+// html标签
 export default class Tag extends Component {
     object3d = new Object3D()
     emitter = mitt<TagEventType>()

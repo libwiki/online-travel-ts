@@ -1,5 +1,6 @@
 import {IThree3DMapRenderGeoJsonOption} from "/@/hooks/three3d/lib/Interfaces";
 import BaseThree3DMap from "/@/hooks/three3d/lib/abstracts/BaseThree3DMap";
+import * as Three from "three";
 
 const MaxTryRunning = 5;
 export default class Three3DMap extends BaseThree3DMap {
@@ -34,7 +35,13 @@ export default class Three3DMap extends BaseThree3DMap {
                 this.borderlineFeatureObjects = results[1];
             }
             this.onReady(); // 需要先执行MapLayer组件后方可获取到实际的center和mapSize
-            this.camera.position.set(this.center.x, this.center.y, this.camera.position.z); //沿着z轴观察
+            this.camera.position.set(this.center.x, this.center.y, this.maxMapAxisValue * 2); //沿着z轴观察
+            // console.log(this.mapBox3)
+            // this.camera.position.copy(new Three.Vector3(
+            //     this.mapBox3.max.x,
+            //     this.mapBox3.max.y,
+            //     this.maxMapAxisValue,
+            // ))
             this.controls.target.set(this.center.x, this.center.y, this.controls.target.z);
             // this.camera.lookAt(this.center.x, this.center.y, this.center.z); //指向中国地图的几何中心
             this.controls.update();// update()函数内会执行camera.lookAt(controls.target)

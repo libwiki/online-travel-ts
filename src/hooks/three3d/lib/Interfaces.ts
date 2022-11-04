@@ -20,6 +20,8 @@ export interface IThree3DMapDebug {
     polarAngleDebug?: boolean, // 上下翻转调试（开启后无死角翻转）
     enablePan?: boolean, // 左右移动（开启后可拖动）
     castShadow?: boolean, // 开启阴影
+    enableAreaLineTween?: boolean, // 开启边界线的渐变动画
+    enableBorderLineTween?: boolean, // 开启外围边框线的跑马灯动画
 }
 
 export interface IFeatureProperties {

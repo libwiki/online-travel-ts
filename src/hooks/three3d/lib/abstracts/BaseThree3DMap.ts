@@ -22,6 +22,7 @@ import {Coordinate, IGeoFeature} from "/@/@types/geoJson";
 import BaseMap from "/@/hooks/three3d/lib/components/BaseMap";
 import MapAreaLine from "/@/hooks/three3d/lib/components/MapAreaLine";
 import BigNumber from "bignumber.js";
+import MapBorderLine from "/@/hooks/three3d/lib/components/MapBorderLine";
 
 export default class BaseThree3DMap extends EmptyComponent {
     el: HTMLElement
@@ -44,7 +45,7 @@ export default class BaseThree3DMap extends EmptyComponent {
     areaFeatureObjects: IFeatureObject[] = []; // 加载的区域边界线geoJson数据
     borderlineFeatureObjects: IFeatureObject[] = []; // 加载的边界外框线的geoJson数据
     components: IComponent[] = []; // 组件
-    camera: Three.Camera
+    camera: Three.PerspectiveCamera
     controls: MapControls
     renderer: Three.WebGLRenderer
     css3DRenderer: CSS3DRenderer
@@ -55,19 +56,21 @@ export default class BaseThree3DMap extends EmptyComponent {
         polarAngleDebug: false, // 上下翻转调试（开启后无死角翻转）
         enablePan: false, // 左右移动（开启后可拖动）
         castShadow: true, // 开启阴影
+        enableAreaLineTween: true, // 开启边界线的渐变动画
+        enableBorderLineTween: true, // 开启外围边框线的跑马灯动画
     }
 
 
     constructor(el?: HTMLElement) {
         super()
         this.el = el || document.body
-        this.setSize(window.innerWidth, window.innerHeight)
         this.mapGroup.name = 'mapGroup'
         this.centerCube.visible = false
         this.centerCube.name = 'centerCube'
         this.camera = this.generateCamera()
         this.renderer = this.generateRenderer()
         this.css3DRenderer = this.generateCss3DRenderer()
+        this.setSize(this.el.clientWidth, this.el.clientHeight)
         this.controls = this.generateControls()
         this.registerComponents()
         this.rayCasters = new RayCasters(this) // 射线组件（该组件在其它地方也用到故在此创建）
@@ -77,12 +80,16 @@ export default class BaseThree3DMap extends EmptyComponent {
 
     // 注册默认组件
     protected registerComponents() {
-        this.components.push(new BaseMap(this)) // BaseMap组件为基础底图,主要是为了计算底图渲染区域大小（比较特殊，必须先启动，只有地图启动了才能知道实际的center和底图mapSize）
-        this.components.push(new MapLayer(this))
-        this.components.push(new MapAreaLine(this))
-        this.components.push(new Helpers(this))
-        this.components.push(new Lights(this))
-        this.components.push(new BackgroundPlane(this))
+        // BaseMap组件为基础底图,主要是为了计算底图渲染区域大小（比较特殊，必须先启动，只有地图启动了才能知道实际的center和底图mapSize）
+        this.components.push(new BaseMap(this))
+
+        // 下列组件的顺序是可自由变换的（不影响实际结果）
+        this.components.push(new BackgroundPlane(this)) // 底图下的背景图
+        this.components.push(new Lights(this)) // 灯光相关
+        this.components.push(new Helpers(this)) // 助手工具（坐标轴、网格平面等）
+        this.components.push(new MapAreaLine(this)) // 边界线
+        // this.components.push(new MapBorderLine(this)) // 外围的边框线
+        this.components.push(new MapLayer(this)) // 地图形状、贴图等
     }
 
     onStart() {
@@ -92,6 +99,9 @@ export default class BaseThree3DMap extends EmptyComponent {
         this.components.forEach(v => v.onStart())
         this.isRunning = true
         this.onUpdate(Date.now())
+        window.onresize = () => {
+            this.setSize(this.el.clientWidth, this.el.clientHeight)
+        }
     }
 
     onReady() {
@@ -128,6 +138,10 @@ export default class BaseThree3DMap extends EmptyComponent {
     setSize(width: number, height: number) {
         this.size.x = width
         this.size.y = height
+        this.renderer.setSize(width, height)
+        this.css3DRenderer.setSize(width, height)
+        this.camera.aspect = this.aspectRatio
+        this.camera.updateProjectionMatrix()
     }
 
 
@@ -199,7 +213,7 @@ export default class BaseThree3DMap extends EmptyComponent {
 
     set mapSize(val: Three.Vector3) {
         this._mapSize = val
-        this.camera.position.z = this.maxMapAxisValue * 2
+        // this.camera.position.z = this.maxMapAxisValue
     }
 
     get minMapAxisValue() {
@@ -322,8 +336,9 @@ export default class BaseThree3DMap extends EmptyComponent {
     }
 
     generateCamera() {
-        const k = this.aspectRatio
-        const s = 1.6
+        // 暂时未兼容 正交相机
+        // const k = this.aspectRatio
+        // const s = 1.6
         // const camera = new Three.OrthographicCamera(-s * k, s * k, s, -s, 1, 1000);
         const camera = new Three.PerspectiveCamera(45, this.aspectRatio, 0.1, 2000);
         camera.position.z = 0;
@@ -341,6 +356,8 @@ export default class BaseThree3DMap extends EmptyComponent {
         }
         // controls.minAzimuthAngle = 0;
         // controls.maxAzimuthAngle = 0;
+        controls.minDistance = 0 // 最小距离（对于透视相机即为放大）
+        controls.maxDistance = 10; // 最大距离（对于透视相机即为缩小，近大远小）
         controls.enablePan = this.debug.enablePan || false; //  禁止平移
         controls.addEventListener('end', (e) => {
             // controls.object.up.setX(this.center.x)
