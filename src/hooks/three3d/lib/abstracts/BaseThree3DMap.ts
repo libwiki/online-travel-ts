@@ -6,12 +6,22 @@ import {geoMercator} from "d3-geo";
 import Helpers from "/@/hooks/three3d/lib/components/Helpers";
 import Lights from "/@/hooks/three3d/lib/components/Lights";
 import MapLayer from "/@/hooks/three3d/lib/components/MapLayer";
-import {IComponent, IFeatureObject, IThree3DMapDebug} from "/@/hooks/three3d/lib/Interfaces";
+import {
+    IComponent,
+    IFeatureObject,
+    IThree3DMapDebug,
+    IThree3DMapRenderGeoJsonOption
+} from "/@/hooks/three3d/lib/Interfaces";
 import {MapControls} from "three/examples/jsm/controls/OrbitControls";
 import {CSS3DRenderer} from "three/examples/jsm/renderers/CSS3DRenderer";
 import RayCasters from "/@/hooks/three3d/lib/components/RayCasters";
 import {getCenterByBox3, getSizeByBox3} from "/@/hooks/three3d/lib/utils";
 import BackgroundPlane from "/@/hooks/three3d/lib/components/BackgroundPlane";
+import {isString} from "lodash";
+import {Coordinate, IGeoFeature} from "/@/@types/geoJson";
+import BaseMap from "/@/hooks/three3d/lib/components/BaseMap";
+import MapAreaLine from "/@/hooks/three3d/lib/components/MapAreaLine";
+import BigNumber from "bignumber.js";
 
 export default class BaseThree3DMap extends EmptyComponent {
     el: HTMLElement
@@ -21,6 +31,8 @@ export default class BaseThree3DMap extends EmptyComponent {
     rayCasters: RayCasters; // 射线组件（管理地图中的除了html元素之外的用户事件处理，html组件元素会独立管理事件处理）
     pointer = new Vector2(); // 当前鼠标经过的点（rayCasters组件中使用到）
     mProjection = geoMercator();
+    geoJsonOption?: IThree3DMapRenderGeoJsonOption; // 包含有区域和外围边界线的geoJsonUrl配置
+
     size = new Three.Vector3(); // 渲染器大小
     centerCube = new Three.Mesh(new BoxGeometry(0, 0, 0), new Three.MeshBasicMaterial()); // 中心点的正方形（目前暂时仅用于光源的方向指向）
     _mapBox3 = new Three.Box3(); // 地图的box3盒子
@@ -29,7 +41,8 @@ export default class BaseThree3DMap extends EmptyComponent {
     mapGroup = new Three.Group();
     fileLoader = new Three.FileLoader();
     textureLoader = new Three.TextureLoader()
-    featureObjects: IFeatureObject[] = []; // 加载的geoJson数据
+    areaFeatureObjects: IFeatureObject[] = []; // 加载的区域边界线geoJson数据
+    borderlineFeatureObjects: IFeatureObject[] = []; // 加载的边界外框线的geoJson数据
     components: IComponent[] = []; // 组件
     camera: Three.Camera
     controls: MapControls
@@ -64,10 +77,12 @@ export default class BaseThree3DMap extends EmptyComponent {
 
     // 注册默认组件
     protected registerComponents() {
-        this.components.push(new MapLayer(this)) // MapLayer组件为基础底图（比较特殊，必须先启动，只有地图启动了才能知道实际的center和底图mapSize）
+        this.components.push(new BaseMap(this)) // BaseMap组件为基础底图,主要是为了计算底图渲染区域大小（比较特殊，必须先启动，只有地图启动了才能知道实际的center和底图mapSize）
+        this.components.push(new MapLayer(this))
+        this.components.push(new MapAreaLine(this))
         this.components.push(new Helpers(this))
         this.components.push(new Lights(this))
-        this.components.push(new BackgroundPlane(this))
+        // this.components.push(new BackgroundPlane(this))
     }
 
     onStart() {
@@ -99,7 +114,8 @@ export default class BaseThree3DMap extends EmptyComponent {
     onDispose() {
         this.components.forEach(v => v.onDispose())
         this.mapGroup.clear() // 清空地图数据
-        this.featureObjects = [] // 清空加载的geoJson数据
+        this.areaFeatureObjects = [] // 清空加载的geoJson数据
+        this.borderlineFeatureObjects = [] // 清空加载的geoJson数据
         super.onDispose()
         requestAnimationFrame(() => { // 在下一帧时彻底停止帧刷新
             this.isRunning = false;
@@ -110,6 +126,22 @@ export default class BaseThree3DMap extends EmptyComponent {
     setSize(width: number, height: number) {
         this.size.x = width
         this.size.y = height
+    }
+
+
+    // 地图拉伸高度
+    get mapDeptHeight() {
+        return this.minMapAxisValue / 20;
+    }
+
+    // 地图区域线段宽度
+    get mapAreaLineWidth() {
+        return this.minMapAxisValue / 1000;
+    }
+
+    // 区域线段的z轴高度 (地图拉伸高度 + offset)
+    get mapAreaLineZAxisHeight() {
+        return BigNumber(this.mapDeptHeight).plus(this.maxMapAxisValue / 1000).toNumber();
     }
 
     get debug() {
@@ -214,6 +246,53 @@ export default class BaseThree3DMap extends EmptyComponent {
                 reject(e)
             })
         })
+    }
+
+    async loadGeoJsonFileAsync(geoJsonUrl: string): Promise<IFeatureObject[] | false> {
+        return new Promise((resolve) => {
+            this.fileLoader.load(geoJsonUrl, (data: any) => {
+                if (isString(data)) {
+                    try {
+                        data = JSON.parse(data)
+                    } catch (e) {
+                        console.log(`解析【${geoJsonUrl}】失败：`, e, data)
+                        return resolve(false)
+                    }
+                }
+                const featureObjects: IFeatureObject[] = [];
+                data.features.forEach((feature: IGeoFeature<any>, index: number) => {
+                    const properties = {
+                        name: feature.properties.name,
+                        city: feature.properties.city,
+                        country: feature.properties.country,
+                        province: feature.properties.province,
+                    }
+                    if (feature.geometry.type === 'Polygon') {
+                        const geometry = this.parsePolygons([feature.geometry.coordinates], index)
+                        featureObjects.push({geometry, properties})
+                    } else if (feature.geometry.type === 'MultiPolygon') {
+                        const geometry = this.parsePolygons(feature.geometry.coordinates, index)
+                        featureObjects.push({geometry, properties})
+                    }
+                })
+                resolve(featureObjects)
+            }, _ => _, e => {
+                console.log(`加载【${geoJsonUrl}】失败：`, e)
+                resolve(false)
+            })
+        })
+    }
+
+    protected parsePolygons(coordinates: any[], index: number) {
+        const areaArr: Coordinate[][] = []
+        coordinates.forEach((item) => { // 这一层如果有多个说明一个区域有多个图形组成（比如（中国的省份）有大陆、台湾、以及多个不相交的群岛组成）
+            const areaItemArr: Coordinate[][] = []
+            item.forEach((polygon: Coordinate[]) => { // 这一层是每一个区域地图的图形坐标
+                areaItemArr.push(polygon)
+            })
+            areaArr.push(...areaItemArr)
+        })
+        return areaArr;
     }
 
 

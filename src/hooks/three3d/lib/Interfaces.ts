@@ -7,6 +7,12 @@ export interface IComponent {
     onDispose(): void // 组件卸载
 }
 
+
+export interface IThree3DMapRenderGeoJsonOption {
+    areaGeoJsonUrl: string, // 每一个区域的geoJsonUrl
+    borderlineGeoJsonUrl: string, // 外围的边界线geoJsonUrl
+}
+
 export interface IThree3DMapDebug {
     lightDebug?: boolean, // 灯光调试
     gridDebug?: boolean, // 网格调试
