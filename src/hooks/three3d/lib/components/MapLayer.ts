@@ -164,6 +164,7 @@ export default class MapLayer extends Component {
         mesh.userData = properties;
         mesh.castShadow = this.map.debug.castShadow || false;
         mesh.receiveShadow = this.map.debug.castShadow || false;
+        console.log(mesh)
 
         this.shareGroup.add(mesh)
 

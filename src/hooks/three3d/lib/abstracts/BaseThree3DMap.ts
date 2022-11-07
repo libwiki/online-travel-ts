@@ -356,8 +356,8 @@ export default class BaseThree3DMap extends EmptyComponent {
         }
         // controls.minAzimuthAngle = 0;
         // controls.maxAzimuthAngle = 0;
-        controls.minDistance = 0 // 最小距离（对于透视相机即为放大）
-        controls.maxDistance = 10; // 最大距离（对于透视相机即为缩小，近大远小）
+        // controls.minDistance = 0 // 最小距离（对于透视相机即为放大）
+        // controls.maxDistance = 10; // 最大距离（对于透视相机即为缩小，近大远小）
         controls.enablePan = this.debug.enablePan || false; //  禁止平移
         controls.addEventListener('end', (e) => {
             // controls.object.up.setX(this.center.x)

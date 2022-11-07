@@ -13,7 +13,7 @@ export default class MapBorderLine extends MapLine {
     allPoints: number[] = []; // 所有的点，用于实现宝马灯的线条动画路径
     protected marqueeLine?: Line2
     protected currentMarqueeIndex = 0;
-    protected marqueeIntervalTime = 10;
+    protected marqueeIntervalTime = 200;
     protected preDeltaTime = 0;
 
     onReady() {
@@ -21,6 +21,7 @@ export default class MapBorderLine extends MapLine {
         if (this.map.debug.enableBorderLineTween) {
             this.lineGroup.name = 'borderLineGroup'
             this.generateMapBorderLine(this.map.borderlineFeatureObjects)
+
         }
     }
 
@@ -30,8 +31,10 @@ export default class MapBorderLine extends MapLine {
             this.preDeltaTime = deltaTime;
             const nextIndex = this.currentMarqueeIndex + 1;
             this.currentMarqueeIndex = nextIndex >= this.chunkPoints.length ? 0 : nextIndex;
-            this.marqueeLine?.geometry.setPositions(this.chunkPoints[nextIndex])
-
+            const chunks = this.chunkPoints[nextIndex]
+            if (chunks) {
+                this.marqueeLine?.geometry.setPositions(chunks)
+            }
         }
     }
 

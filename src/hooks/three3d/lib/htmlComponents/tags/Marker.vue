@@ -102,6 +102,11 @@ defineExpose({setProps})
           <div :style="styles.text" class="text">{{ options.text }}</div>
         </div>
       </div>
+      <!--<div-->
+      <!--    style="position: absolute;bottom: 130px;background: aqua;width: 100px;height: 100px;opacity: 0.7;border: solid 1px red;">-->
+      <!--  弹框-->
+      <!--</div>-->
+
     </div>
   </div>
 </template>

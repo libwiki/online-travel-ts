@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import {ref} from "vue";
+import Marker from "/@/hooks/three3d/lib/htmlComponents/tags/Marker.vue";
 
 const defaultStatus = false
 const blockStatus = ref({
@@ -45,6 +46,7 @@ const blockStatus = ref({
     <div class="right-box" v-if="blockStatus.right">
       <router-view name="right"/>
     </div>
+    <!--<Marker style="position: absolute;left: 50%;top: 50%" text="这是html的标签"/>-->
   </div>
 </template>
 
