@@ -5,7 +5,6 @@ import {mergeG2plotsComponentProps, useG2plots} from "/@/hooks/charts/useG2plots
 import {Bar} from "@antv/g2plot";
 import DefaultOptions from "/@/components/g2plots/DefaultOptions";
 
-
 const props = defineProps({
   data: {
     type: Array,
@@ -47,6 +46,38 @@ const props = defineProps({
   },
   xAxisLabelAlign: String, // x轴标签对齐方式（由于label标签的对齐方式 过深 仅作提取，会覆盖options）
 })
+// 往 interval 几何标记上注册名为 'line' 的 shape
+// https://g2plot.antv.vision/zh/docs/api/options/shape
+// G2.registerShape('interval', 'triangle', {
+//   // 1. 定义关键点
+//   getPoints(cfg) {
+//     const x:any = cfg.x;
+//     const y = cfg.y;
+//     const y0 = cfg.y0;
+//     const width:any = cfg.size;
+//     const results:any[]= [
+//       { x: x - width / 2, y: y0 },
+//       { x: x, y: y },
+//       { x: x + width / 2, y: y0 },
+//     ];
+//     return results
+//   },
+//   // 2. 绘制
+//   draw(cfg, group) {
+//     const points = this.parsePoints(cfg.points); // 将0-1空间的坐标转换为画布坐标
+//     const polygon = group.addShape('path', {
+//       attrs: {
+//         path: [
+//           ['M', points[0].x, points[0].y],
+//           ['L', points[1].x, points[1].y],
+//           ['L', points[2].x, points[2].y],
+//         ],
+//         ...cfg.defaultStyle,
+//       },
+//     });
+//     return polygon;
+//   },
+// });
 
 // 条形图（横向） 默认配置属性(与传入的props合并后得到最终的配置效果)
 // 教程：https://g2plot.antv.vision/zh/docs/manual/plots/bar
@@ -59,6 +90,13 @@ const DefaultChartsOptions = {
   barStyle: {
     radius: 5,
     cursor: "pointer",
+    // fill: 'p(a)/red_bg_980.jpg',
+    // fill: 'p(a)/1666947076990.jpg',
+    // fill:'l(0) 0:#ffffff 0.5:#7ec2f3 1:#1890ff',
+    // shadowColor: 'black',
+    // shadowBlur: 10,
+    // shadowOffsetX: 5,
+    // shadowOffsetY: 5,
   },
   label: {
     position: "right",

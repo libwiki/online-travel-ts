@@ -47,9 +47,10 @@ const DefaultChartsOptions = {
   ...DefaultOptions,
   minColumnWidth: 10,
   maxColumnWidth: 15,
-  barStyle: {
+  columnStyle: {
     radius: 5,
     cursor: "pointer",
+    shadowColor: 'black',
   },
   label: {
     position: "center",

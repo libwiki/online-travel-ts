@@ -1,4 +1,5 @@
 import Main from "../layouts/Main.vue"
+import GridMain from "../layouts/GridMain.vue"
 
 export default [
     {

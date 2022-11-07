@@ -2,7 +2,7 @@
 import {ref} from "vue";
 import Marker from "/@/hooks/three3d/lib/htmlComponents/tags/Marker.vue";
 
-const defaultStatus = false
+const defaultStatus = true
 const blockStatus = ref({
   title: defaultStatus,
   header: defaultStatus,

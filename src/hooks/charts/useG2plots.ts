@@ -1,7 +1,8 @@
 import {isReactive, isRef, onMounted, onUnmounted, ref, toRaw, watch} from "vue";
 import _ from "lodash";
+import {ComputedRef} from "@vue/reactivity";
 
-export function useG2plots(factoryFunc: Function, options: any) {
+export function useG2plots(factoryFunc: Function, options: ComputedRef) {
     const chart = ref()
     const container = ref<HTMLElement>();
     onMounted(() => {
