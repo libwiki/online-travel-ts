@@ -1,3 +1,4 @@
+// http://sdk.g-bim.cn/doc/api/BaseObject.html
 export interface BaseObject {
     // 用于批量多次修改对象的属性
     // 在开始修改之前调用updateBegin，然后可以多次调用setXXX方法，最后调用updateEnd提交修改更新数据
