@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import {computed} from 'vue'
 import _ from "lodash";
-import {px2rem} from "/@/utils/helpers";
+import {px2vw} from "/@/utils/helpers";
 
 const emits = defineEmits(['click'])
 const props = defineProps({
@@ -31,14 +31,14 @@ const styles = computed(() => {
     styles.width = props.size;
     styles.height = props.size;
   } else if (_.isNumber(props.size)) {
-    const size = px2rem(props.size)
+    const size = px2vw(props.size)
     styles.width = size;
     styles.height = size;
   }
   if (_.isString(props.height)) {
     styles.height = props.height;
   } else if (_.isNumber(props.height)) {
-    styles.height = px2rem(props.height);
+    styles.height = px2vw(props.height);
   }
 
   return styles

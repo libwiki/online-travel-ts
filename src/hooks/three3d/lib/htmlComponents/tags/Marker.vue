@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import {computed, ref, toRaw} from "vue";
-import {px2rem} from "/@/utils/helpers";
+import {px2vh, px2vw} from "/@/utils/helpers";
 import _ from "lodash";
 import {ITagCss} from "/@/hooks/three3d/lib/htmlComponents/tags/interfaces";
 
@@ -49,25 +49,25 @@ const cssOptions = computed(() => {
 const styles = computed(() => {
   return {
     point: {
-      width: px2rem(cssOptions.value.markerPoiWidth),
-      height: px2rem(cssOptions.value.markerPoiHeight),
+      width: px2vw(cssOptions.value.markerPoiWidth),
+      height: px2vh(cssOptions.value.markerPoiHeight),
     },
     marker: {
-      width: px2rem(cssOptions.value.markerWidth),
-      height: px2rem(cssOptions.value.markerHeight),
-      bottom: px2rem((cssOptions.value.markerPoiHeight || 0) / 2),
+      width: px2vw(cssOptions.value.markerWidth),
+      height: px2vh(cssOptions.value.markerHeight),
+      bottom: px2vh((cssOptions.value.markerPoiHeight || 0) / 2),
     },
     labelBox: {
-      bottom: px2rem((cssOptions.value.markerPoiHeight || 0) / 2 + (cssOptions.value.markerHeight || 0) + (cssOptions.value.markerLabelMargin || 0)),
+      bottom: px2vh((cssOptions.value.markerPoiHeight || 0) / 2 + (cssOptions.value.markerHeight || 0) + (cssOptions.value.markerLabelMargin || 0)),
     },
     labelContent: {
-      minWidth: px2rem((cssOptions.value.labelMarginLeft || 0) * 2 + (cssOptions.value.textXPadding || 0) * 2),
+      minWidth: px2vw((cssOptions.value.labelMarginLeft || 0) * 2 + (cssOptions.value.textXPadding || 0) * 2),
       height: cssOptions.value.labelHeight,
     },
     text: {
-      height: px2rem((cssOptions.value.labelHeight || 0) - (cssOptions.value.arrowHeight || 0)),
-      lineHeight: px2rem((cssOptions.value.labelHeight || 0) - (cssOptions.value.arrowHeight || 0)),
-      padding: `0 ${px2rem(cssOptions.value.textXPadding || 0)}`,
+      height: px2vh((cssOptions.value.labelHeight || 0) - (cssOptions.value.arrowHeight || 0)),
+      lineHeight: px2vh((cssOptions.value.labelHeight || 0) - (cssOptions.value.arrowHeight || 0)),
+      padding: `0 ${px2vw(cssOptions.value.textXPadding || 0)}`,
       textAlign: `${options.value.textAlign}`,
     }
   }

@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import {computed} from "vue";
 import _ from "lodash";
-import {px2rem} from "/@/utils/helpers";
+import {px2vh} from "/@/utils/helpers";
 
 const props = defineProps({
   data: {
@@ -54,7 +54,7 @@ const bodyStyles = computed(() => {
   }
   // 50是头部的高度 结合css.header-row:height
   const headerHeight = tableData.value.headers.length > 0 ? 50 : 0
-  styles.height = px2rem(props.height - headerHeight);
+  styles.height = px2vh(props.height - headerHeight);
   return styles
 })
 </script>
