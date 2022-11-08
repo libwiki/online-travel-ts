@@ -2,7 +2,7 @@
 import SolidColorDivider from "/@/components/box/SolidColorDivider.vue";
 import {computed} from "vue";
 import _ from "lodash";
-import {px2rem} from "/@/utils/helpers";
+import {px2rem, px2vh} from "/@/utils/helpers";
 
 const props = defineProps({
   title: String,
@@ -24,10 +24,10 @@ const styles = computed(() => {
     styles.width = px2rem(props.width)
   }
   if (_.isNumber(props.maxHeight)) {
-    styles.maxHeight = px2rem(props.maxHeight)
+    styles.maxHeight = px2vh(props.maxHeight)
   }
   if (_.isNumber(props.height)) {
-    styles.height = px2rem(props.height)
+    styles.height = px2vh(props.height)
   }
   if (_.isNumber(props.maxWidth)) {
     styles.maxWidth = px2rem(props.maxWidth)

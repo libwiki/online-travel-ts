@@ -97,7 +97,7 @@ async function initTouristFrom() {
       <div class="tw-h-full tw-flex-1 row-flex-center">
         <Rose class="tw-h-5/6 tw-w-5/6" :data="data1"/>
       </div>
-      <div class="tw-h-full tw-flex-1 row-flex-center">
+      <div class="tw-h-5/6 tw-w-5/6 tw-flex-1 row-flex-center">
         <Bar :data="data1"/>
       </div>
     </Box>

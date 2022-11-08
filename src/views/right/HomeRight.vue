@@ -35,7 +35,7 @@ const tableOptions = [
       </Table>
     </Box>
     <Box
-        class="tw-flex-1"
+        class="tw-h-5/6 tw-flex-1"
         :height="400"
         content-class="tw-px-20 tw-pb-90"
         title="景区热度排行">

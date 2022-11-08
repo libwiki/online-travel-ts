@@ -19,6 +19,14 @@ export function px2rem(variable?: number | string, unit = 'rem') {
     return designConfig.pxToRem(variable, unit)
 }
 
+export function px2vw(variable?: number | string, unit = 'vw') {
+    return designConfig.pxToVw(variable, unit)
+}
+
+export function px2vh(variable?: number | string, unit = 'vh') {
+    return designConfig.pxToVh(variable, unit)
+}
+
 // 将tailwind的rem转换为项目对应的设计稿的rem
 // https://www.tailwindcss.cn/docs/customizing-spacing#-2
 // 按照pxToRem的转换方式换算 tailwind （1 ： 0.25rem ： 4px）=>设计稿等于1600px => 则换算单位为16
