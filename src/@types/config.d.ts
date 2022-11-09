@@ -1,6 +1,9 @@
 import {Partial, Required} from "./objects";
+import {IFreeMarkerOption} from "/@/@types/markerOption";
 
 export interface ICloudOption {
+    name: string,
+
     title: string,
     // 区域编码
     areaCode: number,
@@ -16,8 +19,6 @@ export interface ICloudOption {
     poiDistance: number
 }
 
-export type CloudOptions = Required<{ liangqing: ICloudOption, dahua: ICloudOption }>
-
 export interface IConfigs {
     isDev: boolean
     cssVars: any
@@ -30,9 +31,10 @@ export interface IConfigs {
     publicKey: string, // 加密公钥
     eChartsAnimationDurationUpdate: number, // eCharts数据更新频率
     updateDataTimeWheelInterval: number, // 时间轮间隔（数据更新的大定时器），应该是eCharts数据更新频率的整倍数，并且不能过小（因为每一次时间轮都有可能请求后台数据）
+    liangQingMarkers: IFreeMarkerOption[], // 【飞渡】良庆的标记点的数据结构
     // 云渲染平台配置
     cloudRendering: {
         DTS_HOST: string, // 飞渡链连接地址
-        options: CloudOptions,
+        options: ICloudOption[],
     }
 }

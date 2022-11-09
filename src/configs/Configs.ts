@@ -26,11 +26,15 @@ const Configs: IConfigs = {
     eChartsAnimationDurationUpdate, // eCharts数据更新频率
     updateDataTimeWheelInterval: eChartsAnimationDurationUpdate * 3, // 时间轮间隔（数据更新的大定时器），应该是eCharts数据更新频率的整倍数，并且不能过小（因为每一次时间轮都有可能请求后台数据）
 
+    // 【飞渡】良庆的标记点的数据结构
+    liangQingMarkers: [],
+
     // 云渲染平台配置
     cloudRendering: {
-        DTS_HOST: '192.168.0.105:8080', // 飞渡链连接地址
-        options: {
-            liangqing: {
+        DTS_HOST: '192.168.58.1:8080', // 飞渡链连接地址
+        options: [
+            {
+                name: "liangqing",
                 title: '南宁市良庆区',
                 // 区域编码
                 areaCode: 450108,
@@ -45,7 +49,8 @@ const Configs: IConfigs = {
                 // 标签聚焦时视角高度
                 poiDistance: 1000
             },
-            dahua: {
+            {
+                name: "dahua",
                 title: '大化',
                 areaCode: 451229,
                 kanBanId: 19,
@@ -56,7 +61,7 @@ const Configs: IConfigs = {
                 // 标签聚焦时视角高度
                 poiDistance: 70000
             }
-        }
+        ]
     }
 
 };

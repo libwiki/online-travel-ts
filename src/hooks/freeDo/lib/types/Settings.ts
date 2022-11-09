@@ -1,33 +1,34 @@
 import {Vector2} from "/@/hooks/freeDo/lib/types/Vector";
 import {Colors, CoordinateTypeEnum} from "/@/hooks/freeDo/lib/types/Marker";
+import {ICommandResult} from "/@/hooks/freeDo/lib/types/BaseObject";
 
 // http://sdk.g-bim.cn/doc/api/Settings.html
 export interface ISettings {
     // 获取地图样式
     getMapMode(fn?: Function): Promise<IMapStyle>
 
-    setMapMode(mode: MapModeEnum, options: any, fn?: Function): Promise<any>
+    setMapMode(mode: MapModeEnum, options: any, fn?: Function): Promise<ICommandResult>
 
     // 设置指北针可见性
-    setCampassVisible(visible: boolean, fn?: Function): Promise<any>
+    setCampassVisible(visible: boolean, fn?: Function): Promise<ICommandResult>
 
     // 设置主界面UI元素的可见性
-    setMainUIVisibility(visible: boolean, fn?: Function): Promise<any>
+    setMainUIVisibility(visible: boolean, fn?: Function): Promise<ICommandResult>
 
     // 设置是否触发CameraMoving事件，CameraMoving事件默认是关闭的，如果需要接收相机移动消息，可以调用此方法
-    setEnableCameraMovingEvent(enable: boolean, fn?: Function): Promise<any>
+    setEnableCameraMovingEvent(enable: boolean, fn?: Function): Promise<ICommandResult>
 
     // 设置交互开关，目前支持启用和禁用鼠标交互，禁用后可以通过API设置交互
-    setEnableInteract(enable: boolean, fn?: Function): Promise<any>
+    setEnableInteract(enable: boolean, fn?: Function): Promise<ICommandResult>
 
     // 设置交互模式
-    setInteractiveMode(mode?: InteractiveModeEnum, fn?: Function): Promise<any>
+    setInteractiveMode(mode?: InteractiveModeEnum, fn?: Function): Promise<ICommandResult>
 
     // 设置水平视场角  取值范围：[-360~360] 单位：度
-    setFovX(deg: number, fn?: Function): Promise<any>
+    setFovX(deg: number, fn?: Function): Promise<ICommandResult>
 
     // 设置高亮颜色
-    setHighlightColor(color: Colors, fn?: Function): Promise<any>
+    setHighlightColor(color: Colors, fn?: Function): Promise<ICommandResult>
 }
 
 export enum InteractiveModeEnum {

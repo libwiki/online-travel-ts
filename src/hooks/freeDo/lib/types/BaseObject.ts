@@ -8,5 +8,18 @@ export interface BaseObject {
 
     // 用于批量多次修改对象的属性，与updateBegin配套使用
     // 注意： updateEnd是异步调用，可以用回调函数也可以await
-    updateEnd(fn: Function): Promise<any>
+    updateEnd(fn: Function): Promise<ICommandResult>
+}
+
+export enum ResultEnum {
+    success,
+    fail,
+}
+
+export interface ICommandResult {
+    callbackIndex: number
+    command: number
+    result: ResultEnum
+    resultMessage: string // 成功则为"OK"
+    timestamp: number
 }

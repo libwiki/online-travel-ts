@@ -1,12 +1,13 @@
 // http://sdk.g-bim.cn/doc/api/Camera.html
 import {Vector3} from "/@/hooks/freeDo/lib/types/Vector";
+import {ICommandResult} from "/@/hooks/freeDo/lib/types/BaseObject";
 
 export interface ICamera {
     // 获取当前的相机位置
     get(fn?: (info: ICameraInfo) => void): Promise<ICameraInfo>
 
     // 设置相机位置
-    set(x: number, y: number, z: number, pitch: number, yaw: number, flyTime?: number, fn?: Function): Promise<any>
+    set(x: number, y: number, z: number, pitch: number, yaw: number, flyTime?: number, fn?: Function): Promise<ICommandResult>
 
     // 根据导览名称获取对应导览缩略图的base64字符串
     getAnimationImage(name: string, fn?: (result: IAnimationImage) => void): Promise<IAnimationImage>
@@ -18,30 +19,30 @@ export interface ICamera {
     getEulerAngle(startPoint: Vector3, endPoint: Vector3): EulerAngle
 
     // 设置相机位置
-    lookAt(x: number, y: number, z: number, distance: number, pitch: number, yaw: number, flyTime?: number, fn?: Function): Promise<any>
+    lookAt(x: number, y: number, z: number, distance: number, pitch: number, yaw: number, flyTime?: number, fn?: Function): Promise<ICommandResult>
 
-    lookAtBBox(bbox: number[], pitch: number, yaw: number, flyTime?: number, fn?: Function): Promise<any>
+    lookAtBBox(bbox: number[], pitch: number, yaw: number, flyTime?: number, fn?: Function): Promise<ICommandResult>
 
-    moveBackward(fn?: Function): Promise<any>
+    moveBackward(fn?: Function): Promise<ICommandResult>
 
-    moveDown(fn?: Function): Promise<any>
+    moveDown(fn?: Function): Promise<ICommandResult>
 
-    moveForward(fn?: Function): Promise<any>
+    moveForward(fn?: Function): Promise<ICommandResult>
 
-    moveLeft(fn?: Function): Promise<any>
+    moveLeft(fn?: Function): Promise<ICommandResult>
 
-    moveRight(fn?: Function): Promise<any>
+    moveRight(fn?: Function): Promise<ICommandResult>
 
-    moveUp(fn?: Function): Promise<any>
+    moveUp(fn?: Function): Promise<ICommandResult>
 
     // 开始播放动画导航
-    playAnimation(id: number, fn?: Function): Promise<any>
+    playAnimation(id: number, fn?: Function): Promise<ICommandResult>
 
     // 暂停播放动画导航
-    pauseAnimation(fn?: Function): Promise<any>
+    pauseAnimation(fn?: Function): Promise<ICommandResult>
 
     // 恢复播放动画导航
-    pauseAnimation(fn?: Function): Promise<any>
+    pauseAnimation(fn?: Function): Promise<ICommandResult>
 }
 
 // 相机位置

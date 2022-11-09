@@ -1,9 +1,13 @@
-import {IAirCityPlayer} from "/@/hooks/freeDo/lib/types/AirCityPlayer";
+import {IAirCityPlayer, IAirCityPlayerOption} from "/@/hooks/freeDo/lib/types/AirCityPlayer";
 import {IAirCityAPI, IComponent} from "/@/hooks/freeDo/lib/Interfaces";
 import {IAirCityEvents} from "/@/hooks/freeDo/lib/types/Events";
+import {ICloudOption} from "/@/@types/config";
 
 export default class FreeDo {
     protected _domId: string
+    protected _host: string
+    protected _option: ICloudOption
+
     protected _airCityPlayer?: IAirCityPlayer
     protected __g?: IAirCityAPI
     components: IComponent[] = []; // 组件
@@ -12,25 +16,43 @@ export default class FreeDo {
         return this.__g
     }
 
+    get host() {
+        return this._host
+    }
+
+    set host(host: string) {
+        this._host = host
+    }
+
+    get option() {
+        return this._option
+    }
+
+    set option(option: ICloudOption) {
+        this._option = option
+    }
+
+    set domId(domId: string) {
+        this._domId = domId
+    }
+
     get airCityPlayer() {
         return this._airCityPlayer
     }
 
-    constructor(domId: string) {
+    constructor(domId: string, host: string, option: ICloudOption) {
         this._domId = domId;
+        this._host = host;
+        this._option = option;
     }
 
     onStart(): void {
-        const dtsOption = {
-            // 云渲染实例的ID，该属性有以下两种情况：
-            // 1、对于带视频流的连接，该属性是可选的，如果没有指定iid，则自动分配空闲的实例
-            // 2、对于不带视频流的API调用，该属性是必需的，必需指定云渲染实例才能进行API调用
-            iid: '2482846585653',
+        const dtsOption: IAirCityPlayerOption = {
+            iid: this.option.iid,
             // 工程ID
-            pid: 17,
+            pid: this.option.dtsPid,
             // 必选参数，网页显示视频流的domId
             domId: this._domId,
-            // 必选参数，二次开发时必须指定，否则无法进行二次开发
             apiOptions: {
                 // 必选参数，与云渲染主机通信成功后的回调函数
                 // 注意：只有在onReady之后才可以调用AirCityAPI接口
@@ -43,7 +65,7 @@ export default class FreeDo {
                 useColorLog: true
             }
         }
-        const airCityPlayer = new window.AirCityPlayer("192.168.58.1:8080", dtsOption)
+        const airCityPlayer = new window.AirCityPlayer(this._host, dtsOption)
         this._airCityPlayer = airCityPlayer
         this.__g = airCityPlayer.getAPI()
         console.log(this.airCityPlayer, this.g)
@@ -55,12 +77,10 @@ export default class FreeDo {
     }
 
     onReady(): void {
-        console.log('onReady')
         this.components.forEach(v => v.onReady())
     }
 
-    onDispose(reason = '自动关闭'): void {
-        console.log('onDispose')
+    onDispose(reason = '页面卸载，自动关闭'): void {
         this.components.forEach(v => v.onDispose())
         this._airCityPlayer?.destroy(reason)
     }
