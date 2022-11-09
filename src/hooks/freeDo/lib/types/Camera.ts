@@ -1,4 +1,6 @@
 // http://sdk.g-bim.cn/doc/api/Camera.html
+import {Vector3} from "/@/hooks/freeDo/lib/types/Vector";
+
 export interface ICamera {
     // 获取当前的相机位置
     get(fn?: (info: ICameraInfo) => void): Promise<ICameraInfo>
@@ -13,7 +15,7 @@ export interface ICamera {
     getAnimationList(fn?: (results: IAnimationItem[]) => void): Promise<IAnimationItem[]>
 
     // 根据空间两点计算欧拉角
-    getEulerAngle(startPoint: Point, endPoint: Point): EulerAngle
+    getEulerAngle(startPoint: Vector3, endPoint: Vector3): EulerAngle
 
     // 设置相机位置
     lookAt(x: number, y: number, z: number, distance: number, pitch: number, yaw: number, flyTime?: number, fn?: Function): Promise<any>
@@ -64,8 +66,8 @@ export interface IAnimationItem {
     name: string,
 }
 
-// 坐标 x,y,z
-export type Point = [number, number, number]
+
+
 
 // 欧拉角 Pitch,Yaw,Roll
 export type EulerAngle = [number, number, number]
