@@ -3,6 +3,7 @@ import {ICoord} from "/@/hooks/freeDo/lib/types/Coord";
 import {IMarker} from "/@/hooks/freeDo/lib/types/Marker";
 import {ISettings} from "/@/hooks/freeDo/lib/types/Settings";
 import {IAirCityEvents} from "/@/hooks/freeDo/lib/types/Events";
+import {ICommandResult} from "/@/hooks/freeDo/lib/types/BaseObject";
 
 export interface IAirCityAPI {
     camera: ICamera
@@ -29,7 +30,7 @@ export interface IAirCityAPI {
     removeTick(): void
 
     // 重置场景（重置到刚打开工程的状态）
-    reset(fn: Function): Promise<any>
+    reset(fn?: Function): Promise<ICommandResult>
 
     // 设置三维事件（例如相机飞行开始、结束、Actor的点击等）的回调函数
     setEventCallback(fn: Function): void

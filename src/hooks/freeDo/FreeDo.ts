@@ -82,6 +82,7 @@ export default class FreeDo {
 
     onDispose(reason = '页面卸载，自动关闭'): void {
         this.components.forEach(v => v.onDispose())
+        this.g?.reset() // 重置场景
         this._airCityPlayer?.destroy(reason)
     }
 
