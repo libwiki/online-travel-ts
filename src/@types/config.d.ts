@@ -1,5 +1,4 @@
-import {Partial, Required} from "./objects";
-import {IFreeMarkerOption} from "/@/@types/markerOption";
+import {IFreeCameraFrame, IFreeMarkerOption} from "/@/@types/markerOption";
 
 export interface ICloudOption {
     name: string,
@@ -14,7 +13,7 @@ export interface ICloudOption {
     // 飞渡工程id
     dtsPid: number,
     // 起始相机视角 地图起始坐标 x y z pitch yaw flyTime
-    point: number[],
+    point: IFreeCameraFrame,
     // 标签聚焦时视角高度
     poiDistance: number
 }

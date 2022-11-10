@@ -4,36 +4,51 @@ import {IMarkerOption} from "/@/hooks/freeDo/lib/types/Marker";
 import {IFreeCameraFrame} from "/@/@types/markerOption";
 import {IAirCityEvents} from "/@/hooks/freeDo/lib/types/Events";
 import {isArray} from "lodash";
-import FreeDo from "/@/hooks/freeDo/FreeDo";
+import mitt from "mitt";
+import {reactive} from "vue";
 
 interface ICarouselOption {
     currentIndex: number,
     intervalTime: number,
     sleepTime: number,
     preDeltaTime: number,
-    isRunning: boolean,
-    isSleep: boolean,
     pauseFunc: ((e: Event) => void) | null,
 }
 
+interface ICarouselState {
+    isRunning: boolean,
+    isSleep: boolean,
+}
+
+// 标签组件的事件（轮播事件）
+export enum MarkersEvents {
+    onRunning = "onRunning",
+    onSleep = "onSleep",
+}
+
+type MarkerEventType = {
+    [k in MarkersEvents]: boolean
+}
+
 // 改组件不是纯粹的组件，因为他内部是依赖于外部数据的（httpApi、config等）
-export default class Markers extends Component {
+export class Markers extends Component {
+    emitter = mitt<MarkerEventType>()
     protected _currentMarkers: IMarkerOption[] = [];
     protected _carouselOption: ICarouselOption = {
         currentIndex: 0,
         intervalTime: 10000,
-        sleepTime: 120000,
+        sleepTime: 60000,
         preDeltaTime: 0,
-        isRunning: false,
-        isSleep: false,
         pauseFunc: null
     }
+    carouselState = reactive<ICarouselState>({
+        isRunning: false,
+        isSleep: false,
+    })
 
-
-    // constructor(freeDo: FreeDo, name?: string) {
-    //     super(freeDo, name);
-    // }
-
+    get carouselOption() {
+        return this._carouselOption
+    }
 
     get currentMarkersMap() {
         const map = new Map<string, IMarkerOption>()
@@ -42,7 +57,7 @@ export default class Markers extends Component {
     }
 
     get nextIndex() {
-        const nextIndex = this._carouselOption.currentIndex + 1;
+        const nextIndex = this.carouselOption.currentIndex + 1;
         if (nextIndex >= this._currentMarkers.length) {
             return 0;
         }
@@ -52,7 +67,7 @@ export default class Markers extends Component {
     // 执行下一个轮播镜头
     runNextCameraFrame() {
         const nextIndex = this.nextIndex;
-        if (nextIndex == this._carouselOption.currentIndex) {
+        if (nextIndex == this.carouselOption.currentIndex) {
             return
         }
         const option = this._currentMarkers[nextIndex];
@@ -64,7 +79,11 @@ export default class Markers extends Component {
     }
 
     toggleSleep(val: boolean, removeMarkerTransparentStatus = true) {
-        this._carouselOption.isSleep = val
+        const oldVal = this.carouselState.isSleep
+        if (oldVal !== val) {
+            this.carouselState.isSleep = val
+            this.emitter.emit(MarkersEvents.onSleep, val)
+        }
         if (val) { // 暂时休眠 设置开始休眠时间
             this._carouselOption.preDeltaTime = Date.now();
             if (removeMarkerTransparentStatus) { // 去除所有标签的透明度
@@ -75,7 +94,11 @@ export default class Markers extends Component {
     }
 
     toggleRunning(val: boolean) {
-        this._carouselOption.isRunning = val
+        const oldVal = this.carouselState.isRunning
+        if (oldVal !== val) {
+            this.carouselState.isRunning = val
+            this.emitter.emit(MarkersEvents.onRunning, val)
+        }
         if (val) { // 运行轮播
             this.addEventListeners(); // 监听用户操作事件（用户操作期间，轮播进入休眠状态）
         } else { // 停止运行轮播
@@ -104,10 +127,10 @@ export default class Markers extends Component {
 
 
     onUpdate(deltaTime: number) {
-        const o = this._carouselOption
-        if (o.isRunning) { // 轮播正在运行
+        const o = this.carouselOption
+        if (this.carouselState.isRunning) { // 轮播正在运行
             super.onUpdate(deltaTime);
-            if (o.isSleep) {
+            if (this.carouselState.isSleep) {
                 if (deltaTime - o.preDeltaTime >= o.sleepTime) {
                     this._carouselOption.preDeltaTime = deltaTime;
                     this.runNextCameraFrame()
@@ -124,13 +147,13 @@ export default class Markers extends Component {
     async onReady() {
         super.onReady();
         this._carouselOption.pauseFunc = (e) => {
-            if (this._carouselOption.pauseFunc) {
+            if (this.carouselOption.pauseFunc) {
                 switch (e.type) {
-                    case 'pointerdown':
-                        window.addEventListener('pointermove', this._carouselOption.pauseFunc)
+                    case 'mousedown':
+                        window.addEventListener('mousemove', this.carouselOption.pauseFunc)
                         break;
-                    case 'pointerup':
-                        window.removeEventListener('pointermove', this._carouselOption.pauseFunc)
+                    case 'mouseup':
+                        window.removeEventListener('mousemove', this.carouselOption.pauseFunc)
                         break;
                 }
             }
@@ -148,20 +171,20 @@ export default class Markers extends Component {
     }
 
     addEventListeners() {
-        if (this._carouselOption.pauseFunc) {
-            window.addEventListener('pointerdown', this._carouselOption.pauseFunc)
-            window.addEventListener('pointerup', this._carouselOption.pauseFunc)
-            window.addEventListener('mousewheel', this._carouselOption.pauseFunc)
+        if (this.carouselOption.pauseFunc) {
+            window.addEventListener('mousedown', this.carouselOption.pauseFunc)
+            window.addEventListener('mouseup', this.carouselOption.pauseFunc)
+            window.addEventListener('mousewheel', this.carouselOption.pauseFunc)
 
         }
     }
 
     removeEventListeners() {
-        if (this._carouselOption.pauseFunc) {
-            window.removeEventListener('pointerdown', this._carouselOption.pauseFunc)
-            window.removeEventListener('pointerup', this._carouselOption.pauseFunc)
-            window.removeEventListener('mousewheel', this._carouselOption.pauseFunc)
-            window.removeEventListener('pointermove', this._carouselOption.pauseFunc)
+        if (this.carouselOption.pauseFunc) {
+            window.removeEventListener('mousedown', this.carouselOption.pauseFunc)
+            window.removeEventListener('mouseup', this.carouselOption.pauseFunc)
+            window.removeEventListener('mousewheel', this.carouselOption.pauseFunc)
+            window.removeEventListener('mousemove', this.carouselOption.pauseFunc)
         }
     }
 
@@ -176,16 +199,10 @@ export default class Markers extends Component {
         if (o && o.userDataObjects && isArray(o.userDataObjects)) {
             this.setMarkerImageTransparentStatus(o, false)
             this.toggleMarkersImageTransparentStatus([o.id], true)
-            this.lockAt(o.userDataObjects as IFreeCameraFrame)
+            this.freeDo.lockAt(o.userDataObjects as IFreeCameraFrame)
         }
     }
 
-    lockAt(lookAtPoint?: IFreeCameraFrame) {
-        if (!lookAtPoint) {
-            return
-        }
-        this.freeDo.g?.camera.lookAt(lookAtPoint[0], lookAtPoint[1], lookAtPoint[2], lookAtPoint[3], lookAtPoint[4], lookAtPoint[5], lookAtPoint[6])
-    }
 
     onEvent(event: IAirCityEvents) {
         super.onEvent(event);

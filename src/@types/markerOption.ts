@@ -12,4 +12,4 @@ export interface IFreeMarkerOption {
 
 // 飞渡的相机画面帧
 // x: number, y: number, z: number, distance: number, pitch: number, yaw: number, flyTime?: number
-export type IFreeCameraFrame = [number, number, number, number, number, number, number]
+export type IFreeCameraFrame = [number, number, number, number, number, number, number?]

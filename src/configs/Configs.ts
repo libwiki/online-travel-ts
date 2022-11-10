@@ -44,8 +44,8 @@ const Configs: IConfigs = {
                 iid: '2482846585653',
                 // 飞渡工程id
                 dtsPid: 17,
-                // 起始相机视角 地图起始坐标 x y z pitch yaw flyTime
-                point: [541650.624375, 2523032.509219, 5803.175625, -24.152853, 114.310532, 1],
+                // 起始相机视角 地图起始坐标 x y z distance pitch yaw flyTime
+                point: [541650.624375, 2523032.509219, 5803.175625, 1000, -24.152853, 114.310532, 1],
                 // 标签聚焦时视角高度
                 poiDistance: 1000
             },
@@ -56,8 +56,8 @@ const Configs: IConfigs = {
                 kanBanId: 19,
                 iid: '2482846585653',
                 dtsPid: 18,
-                // 起始相机视角 地图起始坐标 x y z pitch yaw flyTime
-                point: [-252406.46, 2470639.54, 212325.74, -45.0084, -64.101761, 1],
+                // 起始相机视角 地图起始坐标 x y z distance pitch yaw flyTime
+                point: [-252406.46, 2470639.54, 212325.74, 1000, -45.0084, -64.101761, 1],
                 // 标签聚焦时视角高度
                 poiDistance: 70000
             }

@@ -2,6 +2,7 @@ import {IAirCityPlayer, IAirCityPlayerOption} from "/@/hooks/freeDo/lib/types/Ai
 import {IAirCityAPI, IComponent} from "/@/hooks/freeDo/lib/Interfaces";
 import {IAirCityEvents} from "/@/hooks/freeDo/lib/types/Events";
 import {ICloudOption} from "/@/@types/config";
+import {IFreeCameraFrame} from "/@/@types/markerOption";
 
 export default class FreeDo {
     protected _domId: string
@@ -62,6 +63,19 @@ export default class FreeDo {
 
     }
 
+    // 还原回到起始镜头
+    onResetCameraFrame() {
+        console.log(this.option)
+        this.lockAt(this.option.point)
+    }
+
+    lockAt(lookAtPoint?: IFreeCameraFrame) {
+        if (!lookAtPoint) {
+            return
+        }
+        this.g?.camera.lookAt(lookAtPoint[0], lookAtPoint[1], lookAtPoint[2], lookAtPoint[3], lookAtPoint[4], lookAtPoint[5], lookAtPoint[6])
+    }
+
     onStart(): void {
         const dtsOption: IAirCityPlayerOption = {
             iid: this.option.iid,
@@ -84,7 +98,6 @@ export default class FreeDo {
         const airCityPlayer = new window.AirCityPlayer(this._host, dtsOption)
         this._airCityPlayer = airCityPlayer
         this.__g = airCityPlayer.getAPI()
-        console.log(this.airCityPlayer, this.g)
         window.onresize = () => {
             airCityPlayer.resize()
         }
