@@ -12,8 +12,8 @@ function initThree3d() {
   if (el.value) {
     // const three3d = useThree3d(el.value)
     // three3d.onStart()
-    const free = useFreeDo('playerController')
-    free.onStart()
+    // const free = useFreeDo('playerController')
+    // free.onStart()
   }
 }
 </script>

@@ -1,6 +1,7 @@
 import {createApp} from 'vue'
 import App from './App.vue'
 import "normalize.css"
+import 'animate.css'
 import "./utils/flexible" // rem适配（根据屏幕大小自动设置html标签的fontSize）
 import "./styles/tailwind.index.css"
 import 'virtual:svg-icons-register'
