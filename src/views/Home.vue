@@ -24,12 +24,6 @@ const isRunning = computed(() => {
   return state.isRunning && !state.isSleep
 })
 
-function onRunning() {
-  free.markerComponent.toggleSleep(false)
-  free.markerComponent.toggleRunning(true)
-}
-
-
 </script>
 
 <template>
@@ -47,7 +41,7 @@ function onRunning() {
     <SvgIcon
         size="25" name="icon-play-active"
         class="tw-cursor-pointer"
-        @click="onRunning"
+        @click="free.markerComponent.toggleRunning(true,true)"
         v-else/>
     <SvgIcon
         size="25" name="icon-close-loop"

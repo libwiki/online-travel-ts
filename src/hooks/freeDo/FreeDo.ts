@@ -65,7 +65,6 @@ export default class FreeDo {
 
     // 还原回到起始镜头
     onResetCameraFrame() {
-        console.log(this.option)
         this.lockAt(this.option.point)
     }
 

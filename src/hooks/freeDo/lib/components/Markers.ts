@@ -93,13 +93,17 @@ export class Markers extends Component {
         }
     }
 
-    toggleRunning(val: boolean) {
+    toggleRunning(val: boolean, immediate = false) {
         const oldVal = this.carouselState.isRunning
         if (oldVal !== val) {
             this.carouselState.isRunning = val
             this.emitter.emit(MarkersEvents.onRunning, val)
         }
         if (val) { // 运行轮播
+            if (immediate) { // 如果需要立即执行 则设置上次执行时间为0、并且清除休眠状态 即可
+                this._carouselOption.preDeltaTime = 0;
+                this.toggleSleep(false); // 并且清除休眠状态
+            }
             this.addEventListeners(); // 监听用户操作事件（用户操作期间，轮播进入休眠状态）
         } else { // 停止运行轮播
             this.removeEventListeners(); // 轮播停止 用户操作监听可暂时停止（运行轮播后再启动）
