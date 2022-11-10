@@ -4,9 +4,36 @@ import {IMarkerOption} from "/@/hooks/freeDo/lib/types/Marker";
 import {IFreeCameraFrame} from "/@/@types/markerOption";
 import {IAirCityEvents} from "/@/hooks/freeDo/lib/types/Events";
 import {isArray} from "lodash";
+import FreeDo from "/@/hooks/freeDo/FreeDo";
 
+interface ICarouselOption {
+    currentIndex: number,
+    intervalTime: number,
+    sleepTime: number,
+    preDeltaTime: number,
+    isRunning: boolean,
+    isSleep: boolean,
+    pauseFunc: ((e: Event) => void) | null,
+}
+
+// 改组件不是纯粹的组件，因为他内部是依赖于外部数据的（httpApi、config等）
 export default class Markers extends Component {
-    protected _currentMarkers: IMarkerOption[] = []
+    protected _currentMarkers: IMarkerOption[] = [];
+    protected _carouselOption: ICarouselOption = {
+        currentIndex: 0,
+        intervalTime: 10000,
+        sleepTime: 120000,
+        preDeltaTime: 0,
+        isRunning: false,
+        isSleep: false,
+        pauseFunc: null
+    }
+
+
+    // constructor(freeDo: FreeDo, name?: string) {
+    //     super(freeDo, name);
+    // }
+
 
     get currentMarkersMap() {
         const map = new Map<string, IMarkerOption>()
@@ -14,21 +41,141 @@ export default class Markers extends Component {
         return map
     }
 
+    get nextIndex() {
+        const nextIndex = this._carouselOption.currentIndex + 1;
+        if (nextIndex >= this._currentMarkers.length) {
+            return 0;
+        }
+        return nextIndex;
+    }
+
+    // 执行下一个轮播镜头
+    runNextCameraFrame() {
+        const nextIndex = this.nextIndex;
+        if (nextIndex == this._carouselOption.currentIndex) {
+            return
+        }
+        const option = this._currentMarkers[nextIndex];
+        if (!option) {
+            return;
+        }
+        this._carouselOption.currentIndex = nextIndex;
+        this.lockAtByMarkerId(option.id)
+    }
+
+    toggleSleep(val: boolean, removeMarkerTransparentStatus = true) {
+        this._carouselOption.isSleep = val
+        if (val) { // 暂时休眠 设置开始休眠时间
+            this._carouselOption.preDeltaTime = Date.now();
+            if (removeMarkerTransparentStatus) { // 去除所有标签的透明度
+                this.toggleMarkersImageTransparentStatus([], false)
+            }
+
+        }
+    }
+
+    toggleRunning(val: boolean) {
+        this._carouselOption.isRunning = val
+        if (val) { // 运行轮播
+            this.addEventListeners(); // 监听用户操作事件（用户操作期间，轮播进入休眠状态）
+        } else { // 停止运行轮播
+            this.removeEventListeners(); // 轮播停止 用户操作监听可暂时停止（运行轮播后再启动）
+            // 去除所有标签的透明度
+            this.toggleMarkersImageTransparentStatus([], false)
+        }
+    }
+
+    // 批量设置marker的透明状态，主要是更换图片
+    toggleMarkersImageTransparentStatus(excludeIds: string[] = [], isTransparent = false) {
+        const markers = this._currentMarkers.filter(v => !excludeIds.includes(v.id))
+        if (markers.length > 0) {
+            this.freeDo.g?.marker.updateBegin()
+            for (let item of markers) {
+                this.setMarkerImageTransparentStatus(item, isTransparent)
+            }
+            this.freeDo.g?.marker.updateEnd()
+        }
+    }
+
+    setMarkerImageTransparentStatus(item: IMarkerOption, isTransparent = false) {
+        const imagePath = isTransparent ? item.hoverImagePath.replace(/(\/.+)(\.png)/, '$1-vague$2') : item.imagePath;
+        this.freeDo.g?.marker.setImagePath(item.id, imagePath)
+    }
+
+
+    onUpdate(deltaTime: number) {
+        const o = this._carouselOption
+        if (o.isRunning) { // 轮播正在运行
+            super.onUpdate(deltaTime);
+            if (o.isSleep) {
+                if (deltaTime - o.preDeltaTime >= o.sleepTime) {
+                    this._carouselOption.preDeltaTime = deltaTime;
+                    this.runNextCameraFrame()
+                    this.toggleSleep(false); // 解除休眠状态
+                }
+            } else if (deltaTime - o.preDeltaTime >= o.intervalTime) {
+                this._carouselOption.preDeltaTime = deltaTime;
+                this.runNextCameraFrame()
+            }
+        }
+    }
+
 
     async onReady() {
         super.onReady();
+        this._carouselOption.pauseFunc = (e) => {
+            if (this._carouselOption.pauseFunc) {
+                switch (e.type) {
+                    case 'pointerdown':
+                        window.addEventListener('pointermove', this._carouselOption.pauseFunc)
+                        break;
+                    case 'pointerup':
+                        window.removeEventListener('pointermove', this._carouselOption.pauseFunc)
+                        break;
+                }
+            }
+            this.toggleSleep(true, false)
+        }
         const options = this.getMarkerOptions()
         this._currentMarkers = options;
         // 注：存在已经添加过的id都会导致返回的result=1,不影响插入
         await this.freeDo.g?.marker.add(options)
-        // const enableCameraMovingEventRes = await this.freeDo.g?.settings.setEnableCameraMovingEvent(true)
+        // const enableCameraMovingEventRes = await this.freeDo.g?.settings.setEnableCameraMovingEvent(false)
         // console.log('enableCameraMovingEventRes', enableCameraMovingEventRes)
+        this.toggleRunning(true); // 启动镜头轮播
+
 
     }
+
+    addEventListeners() {
+        if (this._carouselOption.pauseFunc) {
+            window.addEventListener('pointerdown', this._carouselOption.pauseFunc)
+            window.addEventListener('pointerup', this._carouselOption.pauseFunc)
+            window.addEventListener('mousewheel', this._carouselOption.pauseFunc)
+
+        }
+    }
+
+    removeEventListeners() {
+        if (this._carouselOption.pauseFunc) {
+            window.removeEventListener('pointerdown', this._carouselOption.pauseFunc)
+            window.removeEventListener('pointerup', this._carouselOption.pauseFunc)
+            window.removeEventListener('mousewheel', this._carouselOption.pauseFunc)
+            window.removeEventListener('pointermove', this._carouselOption.pauseFunc)
+        }
+    }
+
+    onDispose() {
+        super.onDispose();
+        this.removeEventListeners();
+    }
+
 
     lockAtByMarkerId(id: string) {
         const o = this.currentMarkersMap.get(id)
         if (o && o.userDataObjects && isArray(o.userDataObjects)) {
+            this.setMarkerImageTransparentStatus(o, false)
+            this.toggleMarkersImageTransparentStatus([o.id], true)
             this.lockAt(o.userDataObjects as IFreeCameraFrame)
         }
     }
@@ -45,7 +192,6 @@ export default class Markers extends Component {
         if (event.Type === 'marker') {  // 标记点点击事件
             this.lockAtByMarkerId(event.Id)
         }
-
     }
 
 

@@ -8,6 +8,8 @@ export default class FreeDo {
     protected _host: string
     protected _option: ICloudOption
 
+    protected _running = false
+
     protected _airCityPlayer?: IAirCityPlayer
     protected __g?: IAirCityAPI
     components: IComponent[] = []; // 组件
@@ -46,6 +48,20 @@ export default class FreeDo {
         this._option = option;
     }
 
+    get isRunning() {
+        return this._running
+    }
+
+    // 正在启动 （false时将停止onUpdate的帧刷新）
+    set isRunning(val: boolean) {
+        const oldVal = this._running
+        this._running = val
+        if (val && val !== oldVal) { // 重新启动
+            this.onUpdate(Date.now())
+        }
+
+    }
+
     onStart(): void {
         const dtsOption: IAirCityPlayerOption = {
             iid: this.option.iid,
@@ -78,12 +94,24 @@ export default class FreeDo {
 
     onReady(): void {
         this.components.forEach(v => v.onReady())
+        this.isRunning = true
+    }
+
+    onUpdate(deltaTime: number): void {
+        if (this.isRunning) { // 是否正在启动
+            this.components.forEach(v => v.onUpdate(deltaTime))
+            requestAnimationFrame(() => {
+                this.onUpdate(Date.now())
+            });
+        }
     }
 
     onDispose(reason = '页面卸载，自动关闭'): void {
+        this.isRunning = false
         this.components.forEach(v => v.onDispose())
         this.g?.reset() // 重置场景
         this._airCityPlayer?.destroy(reason)
+
     }
 
     onEvent(event: IAirCityEvents): void {

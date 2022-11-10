@@ -111,14 +111,14 @@ export default class BaseThree3DMap extends EmptyComponent {
 
     onUpdate(deltaTime: number) {
         if (this.isRunning) { // 是否正在启动
-            requestAnimationFrame(() => {
-                this.onUpdate(Date.now())
-            });
             this.renderer.render(this.scene, this.camera)
             this.css3DRenderer.render(this.scene, this.camera)
             this.components.forEach(v => v.onUpdate(deltaTime))
             this.controls.update();
             super.onUpdate(deltaTime)
+            requestAnimationFrame(() => {
+                this.onUpdate(Date.now())
+            });
         }
 
     }

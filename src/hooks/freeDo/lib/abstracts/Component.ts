@@ -11,16 +11,19 @@ export default class Component implements IComponent {
         this.freeDo = freeDo
     }
 
-    onDispose(): void {
-    }
-
-    onEvent(event: IAirCityEvents): void {
+    onStart(): void {
     }
 
     onReady(): void {
     }
 
-    onStart(): void {
+    onEvent(event: IAirCityEvents): void {
+    }
+
+    onUpdate(deltaTime: number): void {
+    }
+
+    onDispose(): void {
     }
 
 }
