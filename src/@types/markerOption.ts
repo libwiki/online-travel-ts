@@ -4,10 +4,10 @@ import {Vector2, Vector3} from "/@/hooks/freeDo/lib/types/Vector";
 export interface IFreeMarkerOption {
     pid: string
     name: string
-    point: Vector3
-    iconSize: Vector2
-    lookAtPoint: IFreeCameraFrame
-    sort: number
+    point: Vector3 | Vector2, // Vector2时为世界经纬度坐标，需要转换
+    iconSize?: Vector2
+    lookAtPoint?: IFreeCameraFrame
+    sort?: number
 }
 
 // 飞渡的相机画面帧

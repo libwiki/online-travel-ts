@@ -78,7 +78,6 @@ export default class FreeDo {
         }
         this.g?.camera.lookAt(lookAtPoint[0], lookAtPoint[1], lookAtPoint[2], lookAtPoint[3], lookAtPoint[4], lookAtPoint[5], lookAtPoint[6])
     }
-
     onStart(): void {
         const dtsOption: IAirCityPlayerOption = {
             iid: this.option.iid,

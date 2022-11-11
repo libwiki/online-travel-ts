@@ -5,7 +5,9 @@ import Configs from "../configs/Configs";
 export function getStorageKey(key: string) {
     return `${Configs.StorageKeyPrefix}${key}`
 }
-
+export function isInterface<T extends Object>(val:Object):val is T{
+    return true
+}
 // rsa公钥加密
 export function encrypt(txt: string) {
     const encryptor = new JSEncrypt()

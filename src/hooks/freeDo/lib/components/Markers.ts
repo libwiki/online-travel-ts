@@ -1,10 +1,11 @@
 import Component from "/@/hooks/freeDo/lib/abstracts/Component";
 import {IMarkerOption} from "/@/hooks/freeDo/lib/types/Marker";
-import {IFreeCameraFrame} from "/@/@types/markerOption";
+import {IFreeCameraFrame, IFreeMarkerOption} from "/@/@types/markerOption";
 import {IAirCityEvents} from "/@/hooks/freeDo/lib/types/Events";
 import {isArray} from "lodash";
 import mitt from "mitt";
 import {reactive} from "vue";
+import {Vector2, Vector3} from "/@/hooks/freeDo/lib/types/Vector";
 
 interface ICarouselOption {
     currentIndex: number,
@@ -28,6 +29,7 @@ export enum MarkersEvents {
 type MarkerEventType = {
     [k in MarkersEvents]: boolean
 }
+
 
 // 改组件不是纯粹的组件，因为他内部是依赖于外部数据的（httpApi、config等）
 export class Markers extends Component {
@@ -149,6 +151,7 @@ export class Markers extends Component {
 
     async onReady() {
         super.onReady();
+
         this._carouselOption.pauseFunc = (e) => {
             if (this.carouselOption.pauseFunc) {
                 switch (e.type) {
@@ -162,8 +165,8 @@ export class Markers extends Component {
             }
             this.toggleSleep(true, false)
         }
-        const options = this.getMarkerOptions()
-        console.log(options)
+        const data = await this.getMarkerOptionData()
+        const options = this.getMarkerOptions(data)
         this._currentMarkers = options;
         // 注：存在已经添加过的id都会导致返回的result=1,不影响插入
         await this.freeDo.g?.marker.add(options)
@@ -200,10 +203,15 @@ export class Markers extends Component {
 
     lockAtByMarkerId(id: string) {
         const o = this.currentMarkersMap.get(id)
-        if (o && o.userDataObjects && isArray(o.userDataObjects)) {
-            this.setMarkerImageTransparentStatus(o, false)
-            this.toggleMarkersImageTransparentStatus([o.id], true)
-            this.freeDo.lockAt(o.userDataObjects as IFreeCameraFrame)
+        if (o) {
+            if (o.userDataObjects && isArray(o.userDataObjects)) {
+                this.setMarkerImageTransparentStatus(o, false)
+                this.toggleMarkersImageTransparentStatus([o.id], true)
+                this.freeDo.lockAt(o.userDataObjects as IFreeCameraFrame)
+            } else {
+                this.freeDo.g?.marker.focus([o.id], this.freeDo.option.poiDistance, 1)
+            }
+
         }
     }
 
@@ -219,19 +227,38 @@ export class Markers extends Component {
         return window.location.host || ""
     }
 
-    protected getMarkerOptions() {
+
+    protected async getMarkerOptionData() {
+        const markers = this.freeDo.option.markers || []
+        const results: IFreeMarkerOption[] = []
+        for (let item of markers) {
+            if (item.point.length === 2) {
+                const coordinate = await this.freeDo.g?.coord.gcs2pcs<Vector2>(item.point)
+                if (!coordinate) {
+                    continue;
+                }
+                const point = coordinate.coordinates[0]
+                item.point = [...point, 1]
+
+            }
+            results.push(item)
+        }
+        return results
+    }
+
+    protected getMarkerOptions(markerOptions: IFreeMarkerOption[]) {
         const host = this.host; // host:port （没有协议前缀）
         const sceneName = this.freeDo.sceneName;
-        return (this.freeDo.option.markers || []).map(item => {
+        return markerOptions.map(item => {
             const o: IMarkerOption = {
                 // tag唯一标识
                 id: `marker_${+item.pid}`,
                 // 坐标位置 这里要设置高度,转换为屏幕坐标时参与运算
-                coordinate: item.point,
+                coordinate: (item.point as Vector3),
                 // 可视范围
                 range: [1, 8000000],
                 // 锚点值设置 Y=原图底部原点的像素值 / 图片原高度
-                anchors: [-23, item.iconSize[1]],
+                anchors: [-23, (item.iconSize || [])[1] || 150],
                 // 显示图片路径 - 要使用绝对路径
                 imagePath: `${host}/markers/freeDo/${sceneName}/${item.name}.png`,
                 // 鼠标悬停时显示的图片路径 - 要使用绝对路径
