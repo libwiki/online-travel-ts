@@ -1,5 +1,4 @@
 import Component from "/@/hooks/freeDo/lib/abstracts/Component";
-import Configs from "/@/configs/Configs";
 import {IMarkerOption} from "/@/hooks/freeDo/lib/types/Marker";
 import {IFreeCameraFrame} from "/@/@types/markerOption";
 import {IAirCityEvents} from "/@/hooks/freeDo/lib/types/Events";
@@ -164,6 +163,7 @@ export class Markers extends Component {
             this.toggleSleep(true, false)
         }
         const options = this.getMarkerOptions()
+        console.log(options)
         this._currentMarkers = options;
         // 注：存在已经添加过的id都会导致返回的result=1,不影响插入
         await this.freeDo.g?.marker.add(options)
@@ -215,9 +215,14 @@ export class Markers extends Component {
         }
     }
 
+    protected get host() {
+        return window.location.host || ""
+    }
 
     protected getMarkerOptions() {
-        return Configs.liangQingMarkers.map(item => {
+        const host = this.host; // host:port （没有协议前缀）
+        const sceneName = this.freeDo.sceneName;
+        return (this.freeDo.option.markers || []).map(item => {
             const o: IMarkerOption = {
                 // tag唯一标识
                 id: `marker_${+item.pid}`,
@@ -228,9 +233,9 @@ export class Markers extends Component {
                 // 锚点值设置 Y=原图底部原点的像素值 / 图片原高度
                 anchors: [-23, item.iconSize[1]],
                 // 显示图片路径 - 要使用绝对路径
-                imagePath: `localhost:5173/markers/liangqing/sceinc/${item.name}.png`,
+                imagePath: `${host}/markers/freeDo/${sceneName}/${item.name}.png`,
                 // 鼠标悬停时显示的图片路径 - 要使用绝对路径
-                hoverImagePath: `localhost:5173/markers/liangqing/sceinc/${item.name}.png`,
+                hoverImagePath: `${host}/markers/freeDo/${sceneName}/${item.name}.png`,
                 // 图片的尺寸
                 imageSize: item.iconSize,
                 hoverImageSize: item.iconSize,

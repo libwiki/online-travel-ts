@@ -15,7 +15,15 @@ export interface ICloudOption {
     // 起始相机视角 地图起始坐标 x y z pitch yaw flyTime
     point: IFreeCameraFrame,
     // 标签聚焦时视角高度
-    poiDistance: number
+    poiDistance: number,
+    // 默认生成的标签点
+    markers?: IFreeMarkerOption[],
+}
+
+export interface IFreeDoCloudRenderingOption {
+    host: string, // 飞渡链连接地址
+    defaultScene: string, // 默认的场景名称
+    options: ICloudOption[],
 }
 
 export interface IConfigs {
@@ -30,10 +38,6 @@ export interface IConfigs {
     publicKey: string, // 加密公钥
     eChartsAnimationDurationUpdate: number, // eCharts数据更新频率
     updateDataTimeWheelInterval: number, // 时间轮间隔（数据更新的大定时器），应该是eCharts数据更新频率的整倍数，并且不能过小（因为每一次时间轮都有可能请求后台数据）
-    liangQingMarkers: IFreeMarkerOption[], // 【飞渡】良庆的标记点的数据结构
-    // 云渲染平台配置
-    cloudRendering: {
-        DTS_HOST: string, // 飞渡链连接地址
-        options: ICloudOption[],
-    }
+    // 飞渡云渲染平台配置
+    freeDoCloudRendering: IFreeDoCloudRenderingOption
 }

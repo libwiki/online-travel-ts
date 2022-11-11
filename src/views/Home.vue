@@ -1,14 +1,26 @@
 <script lang="ts" setup>
-import {computed, onMounted, ref, watch} from "vue";
-import {useThree3d} from "/@/hooks/three3d/useThree3d";
+import {computed, onMounted, ref} from "vue";
 import {useFreeDo} from "/@/hooks/freeDo/useFreeDo";
 import SvgIcon from "/@/components/SvgIcon.vue";
+import {useUserInfoStore} from "/@/store/userStore";
+import {isEmpty} from "lodash";
+import Configs from "/@/configs/Configs";
 
 const el = ref<HTMLElement>()
-const free = useFreeDo('playerController')
+const userInfoStore = useUserInfoStore();
 onMounted(() => {
   initThree3d()
 })
+
+const sceneName = computed(() => {
+  const info = userInfoStore.info
+  if (isEmpty(info.username)) {
+    return Configs.freeDoCloudRendering.defaultScene
+  }
+  return info.username;
+})
+
+const free = useFreeDo('playerController', sceneName.value)
 
 function initThree3d() {
   if (el.value) {

@@ -26,13 +26,11 @@ const Configs: IConfigs = {
     eChartsAnimationDurationUpdate, // eCharts数据更新频率
     updateDataTimeWheelInterval: eChartsAnimationDurationUpdate * 3, // 时间轮间隔（数据更新的大定时器），应该是eCharts数据更新频率的整倍数，并且不能过小（因为每一次时间轮都有可能请求后台数据）
 
-    // 【飞渡】良庆的标记点的数据结构
-    liangQingMarkers: [],
-
-    // 云渲染平台配置
-    cloudRendering: {
-        DTS_HOST: '192.168.58.1:8080', // 飞渡链连接地址
-        options: [
+    // 飞渡云渲染平台配置 （比较长 实际会由/configs.js中的配置覆盖，此处只是做个保底操作配置）
+    freeDoCloudRendering: {
+        host: '127.0.0.1:8080', // 飞渡链连接地址
+        defaultScene:"liangqing", // 默认显示的场景名称
+        options: [ // 场景配置
             {
                 name: "liangqing",
                 title: '南宁市良庆区',
@@ -47,7 +45,7 @@ const Configs: IConfigs = {
                 // 起始相机视角 地图起始坐标 x y z distance pitch yaw flyTime
                 point: [541650.624375, 2523032.509219, 5803.175625, 1000, -24.152853, 114.310532, 1],
                 // 标签聚焦时视角高度
-                poiDistance: 1000
+                poiDistance: 1000,
             },
             {
                 name: "dahua",
@@ -57,7 +55,7 @@ const Configs: IConfigs = {
                 iid: '2482846585653',
                 dtsPid: 18,
                 // 起始相机视角 地图起始坐标 x y z distance pitch yaw flyTime
-                point: [-252406.46, 2470639.54, 212325.74, 1000, -45.0084, -64.101761, 1],
+                point: [-252406.46, 2470639.54, 212325.74, 70000, -45.0084, -64.101761, 1],
                 // 标签聚焦时视角高度
                 poiDistance: 70000
             }

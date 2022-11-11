@@ -39,6 +39,10 @@ export default class FreeDo {
         this._domId = domId
     }
 
+    get sceneName() {
+        return this.option.name
+    }
+
     get airCityPlayer() {
         return this._airCityPlayer
     }
