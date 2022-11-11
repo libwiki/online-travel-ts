@@ -17,6 +17,7 @@ import {nodeResolve} from '@rollup/plugin-node-resolve';
 
 // https://vitejs.dev/config/
 export default defineConfig({
+    base: './',
     plugins: [
         vue(),
         nodeResolve(),
@@ -53,13 +54,13 @@ export default defineConfig({
     },
     server: {
         // 反向代理（跨域处理）
-        // proxy: {
-        //     '/api': {
-        //         target: 'https://api.test.com/api',
-        //         changeOrigin: true,
-        //         rewrite: (path) => path.replace(/^\/api/, '')
-        //     },
-        // },
+        proxy: {
+            // '/api': {
+            //     target: 'https://api.test.com/api',
+            //     changeOrigin: true,
+            //     rewrite: (path) => path.replace(/^\/api/, '')
+            // },
+        },
     },
     resolve: {
         alias: [

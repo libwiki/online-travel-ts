@@ -72,12 +72,13 @@ export default class FreeDo {
         this.lockAt(this.option.point)
     }
 
-    lockAt(lookAtPoint?: IFreeCameraFrame) {
+    async lockAt(lookAtPoint?: IFreeCameraFrame) {
         if (!lookAtPoint) {
             return
         }
-        this.g?.camera.lookAt(lookAtPoint[0], lookAtPoint[1], lookAtPoint[2], lookAtPoint[3], lookAtPoint[4], lookAtPoint[5], lookAtPoint[6])
+        return this.g?.camera.lookAt(lookAtPoint[0], lookAtPoint[1], lookAtPoint[2], lookAtPoint[3], lookAtPoint[4], lookAtPoint[5], lookAtPoint[6])
     }
+
     onStart(): void {
         const dtsOption: IAirCityPlayerOption = {
             iid: this.option.iid,
@@ -125,6 +126,7 @@ export default class FreeDo {
         this.isRunning = false
         this.components.forEach(v => v.onDispose())
         this.g?.reset() // 重置场景
+        this.g?.destroy()
         this._airCityPlayer?.destroy(reason)
 
     }

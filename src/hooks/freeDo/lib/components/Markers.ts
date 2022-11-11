@@ -201,9 +201,10 @@ export class Markers extends Component {
     }
 
 
-    lockAtByMarkerId(id: string) {
+    async lockAtByMarkerId(id: string) {
         const o = this.currentMarkersMap.get(id)
         if (o) {
+
             if (o.userDataObjects && isArray(o.userDataObjects)) {
                 this.setMarkerImageTransparentStatus(o, false)
                 this.toggleMarkersImageTransparentStatus([o.id], true)
@@ -211,6 +212,8 @@ export class Markers extends Component {
             } else {
                 this.freeDo.g?.marker.focus([o.id], this.freeDo.option.poiDistance, 1)
             }
+            await this.freeDo.g?.marker.hideAllPopupWindow()
+            this.freeDo.g?.marker.showPopupWindow(o.id);
 
         }
     }
@@ -225,6 +228,11 @@ export class Markers extends Component {
 
     protected get host() {
         return window.location.host || ""
+    }
+
+    protected get popupUrl() {
+        const l = window.location;
+        return `${l.host}/popup`
     }
 
 
@@ -249,7 +257,9 @@ export class Markers extends Component {
     protected getMarkerOptions(markerOptions: IFreeMarkerOption[]) {
         const host = this.host; // host:port （没有协议前缀）
         const sceneName = this.freeDo.sceneName;
+        const popupSize: Vector2 = [350, 400];
         return markerOptions.map(item => {
+            const iconSize = item.iconSize || [300, 150]
             const o: IMarkerOption = {
                 // tag唯一标识
                 id: `marker_${+item.pid}`,
@@ -258,7 +268,8 @@ export class Markers extends Component {
                 // 可视范围
                 range: [1, 8000000],
                 // 锚点值设置 Y=原图底部原点的像素值 / 图片原高度
-                anchors: [-23, (item.iconSize || [])[1] || 150],
+                // anchors: [-23, iconSize[1]],
+                anchors: [-(iconSize[0] / 2), iconSize[1]],
                 // 显示图片路径 - 要使用绝对路径
                 imagePath: `${host}/markers/freeDo/${sceneName}/${item.name}.png`,
                 // 鼠标悬停时显示的图片路径 - 要使用绝对路径
@@ -282,19 +293,23 @@ export class Markers extends Component {
                 // textBackgroundColor: '#0085D0',
                 // textOffset: [0, -5],
                 // popupURL: this.api + "/api/gxota/v1/kanban/scenic?pid=" + sceinc.pid, //弹窗HTML链接
-                // popupURL: `${this.server}marker.htm`, //弹窗HTML链接
+                // popupURL: `${this.popupUrl}`, //弹窗HTML链接
+                // popupURL: `https://img0.baidu.com/it/u=1074607459,3572394066&fm=253&fmt=auto&app=138&f=JPEG?w=230&h=308`, //弹窗HTML链接
+                // popupURL: `http://localhost:5173/popup`, //弹窗HTML链接
+                // popupURL: `http://localhost:5173/popup.html`, //弹窗HTML链接
+                popupURL: `http://localhost:5173/popup.html`, //弹窗HTML链接
                 // 弹窗背景颜色
-                popupBackgroundColor: [1.0, 1.0, 1.0, 1],
+                // popupBackgroundColor: [1.0, 1.0, 1.0, 0],
                 // 弹窗大小
-                popupSize: [400, 400],
+                popupSize,
                 // 弹窗偏移
-                popupOffset: [0, 153],
+                popupOffset: [-iconSize[0], 0 - popupSize[1] / 2 - iconSize[1] / 2],
                 // 标注点下方是否显示垂直牵引线
                 showLine: false,
                 // 失去焦点后是否自动关闭弹出窗口
-                autoHidePopupWindow: true,
+                autoHidePopupWindow: false,
                 // 自动判断下方是否有物体
-                autoHeight: false,
+                autoHeight: true,
                 // 显示模式
                 displayMode: 2,
                 // 避让优先级
