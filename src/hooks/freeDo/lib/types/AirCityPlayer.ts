@@ -45,7 +45,7 @@ export interface IAirCityPlayerOption {
     // 如果只是展示视频流，不需要进行接口调用，可以不指定该选项。
     // 如果指定了apiOptions，在初始化AirCityPlayer的时候会自动创建AirCityAPI对象，后面可以通过
     // getAPI()方法返回创建的AirCityAPI对象。
-    apiOptions?: IAirCityApiOption
+    apiOptions: IAirCityApiOption
     // 参数类型：object 或者 boolean
     // 控制是否在左下角出现“显示信息”的按钮（默认不显示，如果要显示，请设置该参数）。
     // 当点击“显示信息”时，会在小窗口显示当前连接的实时运行状态；当鼠标移动到“显示信息”上停留片刻时，会显示当前所连接的实例的详细信息（主机、工程、实例ID等）

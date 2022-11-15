@@ -1,24 +1,63 @@
 <script lang="ts" setup>
-import {computed, onMounted, reactive} from "vue";
+import {computed, onMounted, reactive, ref} from "vue";
 import {useRoute, useRouter} from "vue-router";
+import Configs from "/@/configs/Configs";
+import {FreeDo, FreeDoEvents} from "/@/hooks/freeDo/FreeDo";
+import {isFunction} from "lodash";
 
 const route = useRoute()
 const router = useRouter()
-const data = reactive({
+const data = reactive<any>({
   id: '',
   menu: '',
+  sceneName: 'liangqing',
   coverFloat: 'none', // none|left|right 封面图布局方式
   coverFit: 'fill', // fill none
-  bodyBox: {
-    width: 885,
-    height: 967,
-  },
   nameFontSize: 48, // 标题字号
+  readying: false,
+  delayCloseFunc: null,
 })
+const freeDo = ref<FreeDo>()
 
 onMounted(() => {
   parseQuery();
+  initFreeDoApi();
 })
+
+function initFreeDoApi() {
+  try {
+    const cloudRenderingOption = Configs.freeDoCloudRendering
+    const sceneOption = cloudRenderingOption.options.find(v => v.name === data.sceneName)
+    if (!sceneOption) {
+      throw new Error('场景配置不存在')
+    }
+    freeDo.value = new FreeDo(cloudRenderingOption.host, sceneOption)
+    freeDo.value?.emitter.on(FreeDoEvents.onReady, _ => {
+      data.readying = true
+      if (isFunction(data.delayCloseFunc)) {
+        data.delayCloseFunc()
+      }
+    })
+    freeDo.value?.emitter.on(FreeDoEvents.onDispose, _ => data.readying = false)
+    freeDo.value.onStart()
+  } catch (e) {
+    console.log(e)
+  }
+}
+
+function onClosePopup() {
+
+  function delayCloseFunc() {
+    freeDo.value?.g?.marker.hideAllPopupWindow();
+    data.delayCloseFunc = null;
+  }
+
+  if (data.readying) {
+    delayCloseFunc()
+  } else {
+    data.delayCloseFunc = delayCloseFunc
+  }
+}
 
 
 // 解析参数
@@ -54,17 +93,17 @@ const contentStyles = computed(() => {
   <div class="container">
     <div class="header">
       <div class="title">
-        <div :class="`text-box font-size-${data.nameFontSize}`">这是标题呀</div>
+        <div :class="`text-box font-size-${data.nameFontSize}`">标题{{ data.readying }}</div>
       </div>
-      <div class="close" @click=""></div>
+      <div class="close" @click.stop="onClosePopup()"></div>
     </div>
-    <div ref="bodyRef" class="body">
+    <div class="body">
       <div :style="contentStyles" class="content-box">
-        <van-image
-            v-for="(item,i) in []"
-            :key="i"
-            :style="coverStyles"
-            :src="`/static/markers/cover/${item}`"/>
+        <img alt=""
+             v-for="(item,i) in []"
+             :key="i"
+             :style="coverStyles"
+             :src="`/static/markers/cover/${item}`"/>
         这是内容呀
       </div>
     </div>
@@ -74,16 +113,28 @@ const contentStyles = computed(() => {
 
 <style lang="less" scoped>
 @designWidth: 960; // 弹框的设计稿宽度
+@designHeight: 1126; // 弹框的设计稿宽度
+@headerHeight: 159;
 .pxToVw (@px, @attr: width) {
-  @vw: (@px / @designWidth) * 100;
+  @vw: max(0, min(100, (@px / @designWidth) * 100));
     @{attr}: ~"@{vw}vw";
+}
+
+.pxToVh (@px, @attr: height) {
+  @vh: max(0, min(100, (@px / @designHeight) * 100));
+    @{attr}: ~"@{vh}vh";
+}
+
+html, body {
+  padding: 0;
+  margin: 0;
 }
 
 .container {
   color: white;
   .pxToVw(36, font-size);
   .pxToVw(960);
-  .pxToVw(1126, height);
+  .pxToVh(1126);
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -92,7 +143,7 @@ const contentStyles = computed(() => {
 
   .header {
     box-sizing: border-box;
-    .pxToVw(159, height);
+    .pxToVh(@headerHeight);
     position: relative;
     display: flex;
     flex-direction: row;
@@ -102,7 +153,7 @@ const contentStyles = computed(() => {
     .title {
       box-sizing: border-box;
       .pxToVw(548);
-      .pxToVw(99, height);
+      .pxToVh(99);
       background: transparent url("/markers/popup/popup_title_bg.png") no-repeat;
       background-size: 100% 100%;
       display: flex;
@@ -137,7 +188,7 @@ const contentStyles = computed(() => {
       right: 0;
       bottom: 0;
       .pxToVw(90);
-      .pxToVw(101, height);
+      .pxToVh(101);
       background: transparent url("/markers/popup/close.png") no-repeat;
       background-size: 100% 100%;
     }
@@ -147,7 +198,8 @@ const contentStyles = computed(() => {
     flex: 1;
     .pxToVw(50, padding-left);
     .pxToVw(25, padding-right);
-    .pxToVw(56, padding-bottom);
+    .pxToVh(56, padding-bottom);
+    .pxToVh(@designHeight - @headerHeight);
     box-sizing: border-box;
     overflow-y: hidden;
 
@@ -155,9 +207,10 @@ const contentStyles = computed(() => {
       box-sizing: border-box;
       width: 100%;
       height: auto;
+      .pxToVh(@designHeight - @headerHeight - 80);
       overflow-y: scroll;
       .pxToVw(19, padding-right);
-      .pxToVw(50, line-height);
+      .pxToVh(50, line-height);
       // 定义滚动条高宽及背景 高宽分别对应横竖滚动条的尺寸
       &::-webkit-scrollbar {
         .pxToVw(28);
@@ -172,7 +225,7 @@ const contentStyles = computed(() => {
       // 定义滑块 内阴影+圆角
       &::-webkit-scrollbar-thumb {
         .pxToVw(32);
-        .pxToVw(70, height);
+        .pxToVh(70);
         background: url("/markers/popup/slider.png") no-repeat center center;
         background-size: 120% 100%;
       }
@@ -186,7 +239,7 @@ const contentStyles = computed(() => {
       // 上面箭头
       &::-webkit-scrollbar-button:vertical:single-button:start {
         .pxToVw(28);
-        .pxToVw(30, height);
+        .pxToVh(30);
         background: transparent url("/markers/popup/arrow_up.png") no-repeat center bottom;
         background-size: 100% 100%;
         cursor: pointer;
@@ -195,7 +248,7 @@ const contentStyles = computed(() => {
       // 下面箭头
       &::-webkit-scrollbar-button:vertical:single-button:end {
         .pxToVw(28);
-        .pxToVw(30, height);
+        .pxToVh(30);
         background: transparent url("/markers/popup/arrow_down.png") no-repeat center center;
         background-size: 100% 100%;
         cursor: pointer;
@@ -204,4 +257,5 @@ const contentStyles = computed(() => {
     }
   }
 }
+
 </style>

@@ -1,6 +1,6 @@
 import {IComponent} from "/@/hooks/freeDo/lib/Interfaces";
 import {IAirCityEvents} from "/@/hooks/freeDo/lib/types/Events";
-import FreeDo from "/@/hooks/freeDo/FreeDo";
+import {FreeDo} from "/@/hooks/freeDo/FreeDo";
 
 export default class Component implements IComponent {
     name?: string

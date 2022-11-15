@@ -214,6 +214,7 @@ export class Markers extends Component {
             }
             await this.freeDo.g?.marker.hideAllPopupWindow()
             this.freeDo.g?.marker.showPopupWindow(o.id);
+            console.log(await this.freeDo.g?.marker.get(o.id))
 
         }
     }
@@ -232,7 +233,7 @@ export class Markers extends Component {
 
     protected get popupUrl() {
         const l = window.location;
-        return `${l.host}/popup`
+        return `${l.protocol}//${l.host}/popup`
     }
 
 
@@ -257,7 +258,7 @@ export class Markers extends Component {
     protected getMarkerOptions(markerOptions: IFreeMarkerOption[]) {
         const host = this.host; // host:port （没有协议前缀）
         const sceneName = this.freeDo.sceneName;
-        const popupSize: Vector2 = [350, 400];
+        const popupSize: Vector2 = ([480, 563]).map(v => v * 0.8) as Vector2;
         return markerOptions.map(item => {
             const iconSize = item.iconSize || [300, 150]
             const o: IMarkerOption = {
@@ -292,12 +293,8 @@ export class Markers extends Component {
                 // 文本背景颜色
                 // textBackgroundColor: '#0085D0',
                 // textOffset: [0, -5],
-                // popupURL: this.api + "/api/gxota/v1/kanban/scenic?pid=" + sceinc.pid, //弹窗HTML链接
-                // popupURL: `${this.popupUrl}`, //弹窗HTML链接
-                // popupURL: `https://img0.baidu.com/it/u=1074607459,3572394066&fm=253&fmt=auto&app=138&f=JPEG?w=230&h=308`, //弹窗HTML链接
+                popupURL: `${this.popupUrl}`, //弹窗HTML链接
                 // popupURL: `http://localhost:5173/popup`, //弹窗HTML链接
-                // popupURL: `http://localhost:5173/popup.html`, //弹窗HTML链接
-                popupURL: `http://localhost:5173/popup.html`, //弹窗HTML链接
                 // 弹窗背景颜色
                 // popupBackgroundColor: [1.0, 1.0, 1.0, 0],
                 // 弹窗大小

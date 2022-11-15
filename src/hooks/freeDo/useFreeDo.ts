@@ -1,4 +1,4 @@
-import FreeDo from "/@/hooks/freeDo/FreeDo";
+import {FreeDo} from "/@/hooks/freeDo/FreeDo";
 import {Markers} from "/@/hooks/freeDo/lib/components/Markers";
 import Configs from "/@/configs/Configs";
 
@@ -9,7 +9,7 @@ export function useFreeDo(elementId: string, sceneName: string) {
     if (!sceneOption) {
         throw new Error('场景配置不存在')
     }
-    const freeDo = new FreeDo(elementId, cloudRenderingOption.host, sceneOption)
+    const freeDo = new FreeDo(cloudRenderingOption.host, sceneOption, elementId)
     const markerComponent = new Markers(freeDo)
     freeDo.components.push(markerComponent)
 

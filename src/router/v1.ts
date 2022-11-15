@@ -32,12 +32,4 @@ export default [
             title: "一键游南宁",
         }
     },
-    {
-        name: "demo",
-        path: '/demo',
-        component: () => import("../views/Demo.vue"),
-        meta: {
-            title: "一键游南宁",
-        }
-    },
 ]
