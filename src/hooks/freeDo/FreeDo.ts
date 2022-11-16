@@ -2,7 +2,7 @@ import {IAirCityPlayer, IAirCityPlayerOption} from "/@/hooks/freeDo/lib/types/Ai
 import {IAirCityAPI, IComponent} from "/@/hooks/freeDo/lib/Interfaces";
 import {IAirCityEvents} from "/@/hooks/freeDo/lib/types/Events";
 import {ICloudOption} from "/@/@types/config";
-import {IFreeCameraFrame} from "/@/@types/markerOption";
+import {IFreeCameraFrame, toIFreeCameraFrame} from "/@/@types/markerOption";
 import mitt from "mitt";
 
 // 标签组件的事件（轮播事件）
@@ -11,6 +11,20 @@ export enum FreeDoEvents {
     onEvent = "onEvent",
     onUpdate = "onUpdate",
     onDispose = "onDispose",
+}
+
+interface ITest {
+    name: string
+}
+
+class TestClass<T extends ITest>{
+    test1(name: string): ITest {
+        return {name};
+    }
+
+    test2(name: string): T {
+        return {name};
+    }
 }
 
 type MarkerEventType = {
@@ -80,16 +94,29 @@ export class FreeDo {
 
     }
 
-    // 还原回到起始镜头
-    onResetCameraFrame() {
-        this.lockAt(this.option.point)
+    getComponentByName<T extends IComponent>(name: string): T | void {
+        return this.components.find(v => v.name === name) as any;
     }
 
-    async lockAt(lookAtPoint?: IFreeCameraFrame) {
+
+    // 还原回到起始镜头
+    onResetCameraFrame() {
+        this.lookAt(toIFreeCameraFrame(this.option.point))
+    }
+
+    async lookAt(lookAtPoint?: IFreeCameraFrame) {
         if (!lookAtPoint) {
             return
         }
-        return this.g?.camera.lookAt(lookAtPoint[0], lookAtPoint[1], lookAtPoint[2], lookAtPoint[3], lookAtPoint[4], lookAtPoint[5], lookAtPoint[6])
+        return this.g?.camera.lookAt(
+            lookAtPoint.x,
+            lookAtPoint.y,
+            lookAtPoint.z,
+            lookAtPoint.distance,
+            lookAtPoint.pitch,
+            lookAtPoint.yaw,
+            lookAtPoint.flyTime || 0
+        )
     }
 
     onStart(): void {
@@ -150,7 +177,7 @@ export class FreeDo {
     }
 
     onEvent(event: IAirCityEvents): void {
-        // console.log('event', event)
+        console.log('event', event)
         this.components.forEach(v => v.onEvent(event))
         this.emitter.emit(FreeDoEvents.onEvent, event)
     }

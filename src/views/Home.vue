@@ -36,6 +36,10 @@ const isRunning = computed(() => {
   return state.isRunning && !state.isSleep
 })
 
+async function getCameraFrame() {
+  const frame = await free.freeDo.g?.camera.get()
+  console.log(frame)
+}
 </script>
 
 <template>
@@ -63,6 +67,7 @@ const isRunning = computed(() => {
         size="25" name="icon-location"
         @click="free.freeDo.onResetCameraFrame()"
         class="tw-cursor-pointer"/>
+    <button @click="getCameraFrame">相机</button>
   </div>
 </template>
 

@@ -44,6 +44,8 @@ export interface IAirCityAPI {
 }
 
 export interface IComponent {
+    name?: string
+
     onStart(): void // 开始
     onReady(): void // 数据准备就绪
     onEvent(event: IAirCityEvents): void //

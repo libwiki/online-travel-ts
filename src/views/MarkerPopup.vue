@@ -5,6 +5,7 @@ import Configs from "/@/configs/Configs";
 import {FreeDo, FreeDoEvents} from "/@/hooks/freeDo/FreeDo";
 import {isFunction} from "lodash";
 import {IFreeMarkerOption} from "/@/@types/markerOption";
+import {Markers} from "/@/hooks/freeDo/lib/components/Markers";
 
 const route = useRoute()
 const router = useRouter()
@@ -38,13 +39,13 @@ function initFreeDoApi() {
       throw new Error('场景配置不存在')
     }
     freeDo.value = new FreeDo(cloudRenderingOption.host, sceneOption)
-    freeDo.value?.emitter.on(FreeDoEvents.onReady, _ => {
+    freeDo.value.emitter.on(FreeDoEvents.onReady, _ => {
       data.readying = true
       if (isFunction(data.delayCloseFunc)) {
         data.delayCloseFunc()
       }
     })
-    freeDo.value?.emitter.on(FreeDoEvents.onDispose, _ => data.readying = false)
+    freeDo.value.emitter.on(FreeDoEvents.onDispose, _ => data.readying = false)
     freeDo.value.onStart()
   } catch (e) {
     console.log(e)
@@ -53,7 +54,7 @@ function initFreeDoApi() {
 
 function onClosePopup() {
   function delayCloseFunc() {
-    freeDo.value?.g?.marker.hideAllPopupWindow();
+    freeDo.value?.g?.marker.hideAllPopupWindow()
     data.delayCloseFunc = null;
   }
 

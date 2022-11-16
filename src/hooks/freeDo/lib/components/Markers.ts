@@ -1,12 +1,13 @@
 import Component from "/@/hooks/freeDo/lib/abstracts/Component";
 import {IMarkerOption} from "/@/hooks/freeDo/lib/types/Marker";
-import {IFreeCameraFrame, IFreeMarkerOption} from "/@/@types/markerOption";
+import {IFreeCameraFrame, IFreeMarkerOption, toIFreeCameraFrame} from "/@/@types/markerOption";
 import {IAirCityEvents} from "/@/hooks/freeDo/lib/types/Events";
 import {isArray} from "lodash";
 import mitt from "mitt";
 import {reactive} from "vue";
 import {Vector2, Vector3} from "/@/hooks/freeDo/lib/types/Vector";
 import qs from "qs";
+import {FreeDo} from "/@/hooks/freeDo/FreeDo";
 
 interface ICarouselOption {
     currentIndex: number,
@@ -35,6 +36,7 @@ type MarkerEventType = {
 // 改组件不是纯粹的组件，因为他内部是依赖于外部数据的（httpApi、config等）
 export class Markers extends Component {
     emitter = mitt<MarkerEventType>()
+    protected _autoRenderMarkers = false; // 是否自动渲染标记，自动启动轮播（false时仅生成标记数据，不添加到场景种，也不启动轮播功能）
     protected _currentMarkers: IMarkerOption[] = [];
     protected _showPopupWindowMarkers: IMarkerOption[] = [];
     protected _carouselOption: ICarouselOption = {
@@ -48,6 +50,15 @@ export class Markers extends Component {
         isRunning: false,
         isSleep: false,
     })
+
+    constructor(freeDo: FreeDo, name?: string, autoRenderMarkers = false) {
+        super(freeDo, name);
+        this._autoRenderMarkers = autoRenderMarkers;
+    }
+
+    get autoRenderMarkers() {
+        return this._autoRenderMarkers;
+    }
 
     get carouselOption() {
         return this._carouselOption
@@ -153,29 +164,29 @@ export class Markers extends Component {
 
     async onReady() {
         super.onReady();
-
-        this._carouselOption.pauseFunc = (e) => {
-            if (this.carouselOption.pauseFunc) {
-                switch (e.type) {
-                    case 'mousedown':
-                        window.addEventListener('mousemove', this.carouselOption.pauseFunc)
-                        break;
-                    case 'mouseup':
-                        window.removeEventListener('mousemove', this.carouselOption.pauseFunc)
-                        break;
-                }
-            }
-            this.toggleSleep(true, false)
-        }
         const data = await this.getMarkerOptionData()
         const options = this.getMarkerOptions(data)
         this._currentMarkers = options;
-        // 注：存在已经添加过的id都会导致返回的result=1,不影响插入
-        await this.freeDo.g?.marker.add(options)
-        // const enableCameraMovingEventRes = await this.freeDo.g?.settings.setEnableCameraMovingEvent(false)
-        // console.log('enableCameraMovingEventRes', enableCameraMovingEventRes)
-        this.toggleRunning(true); // 启动镜头轮播
-
+        if (this.autoRenderMarkers) {
+            // 注：存在已经添加过的id都会导致返回的result=1,不影响插入
+            await this.freeDo.g?.marker.add(options)
+            // const enableCameraMovingEventRes = await this.freeDo.g?.settings.setEnableCameraMovingEvent(false)
+            // console.log('enableCameraMovingEventRes', enableCameraMovingEventRes)
+            this._carouselOption.pauseFunc = (e) => {
+                if (this.carouselOption.pauseFunc) {
+                    switch (e.type) {
+                        case 'mousedown':
+                            window.addEventListener('mousemove', this.carouselOption.pauseFunc)
+                            break;
+                        case 'mouseup':
+                            window.removeEventListener('mousemove', this.carouselOption.pauseFunc)
+                            break;
+                    }
+                }
+                this.toggleSleep(true, false)
+            }
+            this.toggleRunning(true); // 启动镜头轮播
+        }
 
     }
 
@@ -203,36 +214,48 @@ export class Markers extends Component {
         this.removeEventListeners();
     }
 
+    async hideAllPopupWindow() {
+        this._showPopupWindowMarkers = [];
+        return this.freeDo.g?.marker.hideAllPopupWindow()
+    }
 
     async lockAtByMarkerId(id: string) {
-        // const ids = this._showPopupWindowMarkers.map(v => v.id)
-        // if (ids.length > 0) {
-        //     await this.freeDo.g?.marker.hidePopupWindow(ids)
-        //     this._showPopupWindowMarkers = [];
-        // }
-        await this.freeDo.g?.marker.hideAllPopupWindow()
+        await this.hideAllPopupWindow()
         const o = this.currentMarkersMap.get(id)
         if (o) {
             this.setMarkerImageTransparentStatus(o, false)
             this.toggleMarkersImageTransparentStatus([o.id], true)
-
+            let flyTime = 1;
             if (o.userDataObjects && isArray(o.userDataObjects)) {
-                await this.freeDo.lockAt(o.userDataObjects as IFreeCameraFrame)
+                const frame = toIFreeCameraFrame(o.userDataObjects)
+                flyTime = frame.flyTime || 0;
+                await this.freeDo.lookAt(frame)
             } else {
-                this.freeDo.g?.marker.focus(o.id, this.freeDo.option.poiDistance, 1)
+                this.freeDo.g?.marker.focus(o.id, this.freeDo.option.poiDistance, flyTime)
             }
-            const res = await this.freeDo.g?.marker.showPopupWindow(o.id);
-            console.log('showPopupWindow res:', res, await this.freeDo.g?.marker.get(o.id))
-            this._showPopupWindowMarkers.push(o)
+            setTimeout(async () => { // 必须等待相机执行完成后才能设置
+                await this.freeDo.g?.marker.showPopupWindow(o.id);
+                this._showPopupWindowMarkers.push(o)
+            }, flyTime * 1000 + 200)
+
 
         }
+    }
+
+    async hidePopupWindow() {
+        this.toggleMarkersImageTransparentStatus([], false)
+        return this.hideAllPopupWindow()
     }
 
 
     onEvent(event: IAirCityEvents) {
         super.onEvent(event);
         if (event.Type === 'marker') {  // 标记点点击事件
-            this.lockAtByMarkerId(event.Id)
+            if (this._showPopupWindowMarkers.find(v => v.id === event.Id)) {
+                this.hidePopupWindow();
+            } else {
+                this.lockAtByMarkerId(event.Id)
+            }
         }
     }
 
@@ -317,7 +340,7 @@ export class Markers extends Component {
                 // 标注点下方是否显示垂直牵引线
                 showLine: false,
                 // 失去焦点后是否自动关闭弹出窗口
-                autoHidePopupWindow: false,
+                autoHidePopupWindow: true,
                 // 自动判断下方是否有物体
                 autoHeight: false,
                 // 显示模式

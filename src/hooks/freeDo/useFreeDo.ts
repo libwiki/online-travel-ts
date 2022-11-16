@@ -11,7 +11,7 @@ export function useFreeDo(elementId: string, sceneName: string) {
         throw new Error('场景配置不存在')
     }
     const freeDo = new FreeDo(cloudRenderingOption.host, sceneOption, elementId)
-    const markerComponent = new Markers(freeDo)
+    const markerComponent = new Markers(freeDo, 'Markers', true)
     freeDo.components.push(markerComponent)
 
     onUnmounted(() => {
