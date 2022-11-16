@@ -6,6 +6,8 @@ import {FreeDo, FreeDoEvents} from "/@/hooks/freeDo/FreeDo";
 import {isFunction} from "lodash";
 import {IFreeMarkerOption} from "/@/@types/markerOption";
 import {Markers} from "/@/hooks/freeDo/lib/components/Markers";
+import {ICloudOption} from "/@/@types/config";
+import {IMarkerOption} from "/@/hooks/freeDo/lib/types/Marker";
 
 const route = useRoute()
 const router = useRouter()
@@ -19,6 +21,8 @@ const data = reactive<any>({
   delayCloseFunc: null,
 })
 const freeDo = ref<FreeDo>()
+const markersComponent = ref<Markers>()
+const sceneOption = ref<ICloudOption>()
 
 onMounted(() => {
   parseQuery();
@@ -34,11 +38,12 @@ onUnmounted(() => {
 function initFreeDoApi() {
   try {
     const cloudRenderingOption = Configs.freeDoCloudRendering
-    const sceneOption = cloudRenderingOption.options.find(v => v.name === data.sceneName)
-    if (!sceneOption) {
+    sceneOption.value = cloudRenderingOption.options.find(v => v.name === data.sceneName)
+    if (!sceneOption.value) {
       throw new Error('场景配置不存在')
     }
-    freeDo.value = new FreeDo(cloudRenderingOption.host, sceneOption)
+    freeDo.value = new FreeDo(cloudRenderingOption.host, sceneOption.value)
+    markersComponent.value = new Markers(freeDo.value)
     freeDo.value.emitter.on(FreeDoEvents.onReady, _ => {
       data.readying = true
       if (isFunction(data.delayCloseFunc)) {
@@ -54,7 +59,22 @@ function initFreeDoApi() {
 
 function onClosePopup() {
   function delayCloseFunc() {
+    // markersComponent.value?.hidePopupWindow();
     freeDo.value?.g?.marker.hideAllPopupWindow()
+    const ids = sceneOption.value?.markers?.map(v => `marker_${v.pid}`) || [];
+    freeDo.value?.g?.marker.get(ids).then(res => {
+      const markers: IMarkerOption[] = res.data
+      if (markers.length > 0) {
+        freeDo.value?.g?.marker.updateBegin()
+        for (let item of markers) {
+          const imagePath = item.imagePath.replace(/-vague\.png/, '.png')
+          console.log(imagePath)
+          freeDo.value?.g?.marker.setImagePath(item.id, imagePath)
+        }
+        console.log(markers)
+        freeDo.value?.g?.marker.updateEnd()
+      }
+    })
     data.delayCloseFunc = null;
   }
 

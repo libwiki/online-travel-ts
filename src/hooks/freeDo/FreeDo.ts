@@ -13,19 +13,6 @@ export enum FreeDoEvents {
     onDispose = "onDispose",
 }
 
-interface ITest {
-    name: string
-}
-
-class TestClass<T extends ITest>{
-    test1(name: string): ITest {
-        return {name};
-    }
-
-    test2(name: string): T {
-        return {name};
-    }
-}
 
 type MarkerEventType = {
     [k in FreeDoEvents]: any
@@ -94,8 +81,9 @@ export class FreeDo {
 
     }
 
-    getComponentByName<T extends IComponent>(name: string): T | void {
-        return this.components.find(v => v.name === name) as any;
+    getComponentByName<T extends IComponent>(name: string): T | void;
+    getComponentByName<T extends IComponent>(name: string): IComponent | void {
+        return this.components.find(v => v.name === name);
     }
 
 

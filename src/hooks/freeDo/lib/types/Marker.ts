@@ -10,9 +10,9 @@ export interface IMarker extends BaseObject {
     update(data: IMarkerOption | IMarkerOption[], fn?: Function): Promise<ICommandResult>
 
     // 根据ID获取标注的详细信息
-    get(ids: string, fn?: Function): Promise<IMarkerOption>
+    get(ids: string, fn?: Function): Promise<IMarkerOptionResult>
 
-    get(ids: string[], fn?: Function): Promise<IMarkerOption[]>
+    get(ids: string[], fn?: Function): Promise<IMarkerOptionResult>
 
     // 设置标注的文本
     setText(id: string, newVal: string, fn?: Function): Promise<ICommandResult>
@@ -100,6 +100,10 @@ export enum DisplayModeEnum {
     avoidance_move_hide, // 1：相机移动时显示，参与避让聚合
     no_avoidance_move_show, // 2：相机移动时显示，不参与避让聚合
 
+}
+
+export interface IMarkerOptionResult extends ICommandResult {
+    data: IMarkerOption[]
 }
 
 // //常量颜色

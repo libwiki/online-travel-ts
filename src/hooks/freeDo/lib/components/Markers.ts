@@ -139,7 +139,12 @@ export class Markers extends Component {
     }
 
     setMarkerImageTransparentStatus(item: IMarkerOption, isTransparent = false) {
-        const imagePath = isTransparent ? item.hoverImagePath.replace(/(\/.+)(\.png)/, '$1-vague$2') : item.imagePath;
+        let imagePath = "";
+        if (isTransparent) {
+            imagePath = item.imagePath.replace(/(\/.+)(\.png)/, '$1-vague$2')
+        } else {
+            imagePath = item.imagePath.replace(/-vague\.png/, '.png')
+        }
         this.freeDo.g?.marker.setImagePath(item.id, imagePath)
     }
 
@@ -299,7 +304,7 @@ export class Markers extends Component {
             const iconSize = item.iconSize || [300, 150]
             const o: IMarkerOption = {
                 // tag唯一标识
-                id: `marker_${+item.pid}`,
+                id: `marker_${item.pid}`,
                 // 坐标位置 这里要设置高度,转换为屏幕坐标时参与运算
                 coordinate: (item.point as Vector3),
                 // 可视范围
