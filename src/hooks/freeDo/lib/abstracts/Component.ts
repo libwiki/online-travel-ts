@@ -23,7 +23,7 @@ export default class Component implements IComponent {
     onUpdate(deltaTime: number): void {
     }
 
-    onDispose(): void {
+    async onDispose(): Promise<any> {
     }
 
 }

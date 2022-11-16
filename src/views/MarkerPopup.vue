@@ -1,15 +1,15 @@
 <script lang="ts" setup>
-import {computed, onMounted, reactive, ref} from "vue";
+import {computed, onMounted, onUnmounted, reactive, ref} from "vue";
 import {useRoute, useRouter} from "vue-router";
 import Configs from "/@/configs/Configs";
 import {FreeDo, FreeDoEvents} from "/@/hooks/freeDo/FreeDo";
 import {isFunction} from "lodash";
+import {IFreeMarkerOption} from "/@/@types/markerOption";
 
 const route = useRoute()
 const router = useRouter()
 const data = reactive<any>({
   id: '',
-  menu: '',
   sceneName: 'liangqing',
   coverFloat: 'none', // none|left|right 封面图布局方式
   coverFit: 'fill', // fill none
@@ -22,6 +22,12 @@ const freeDo = ref<FreeDo>()
 onMounted(() => {
   parseQuery();
   initFreeDoApi();
+})
+onUnmounted(() => {
+  data.readying = false;
+  if (data.delayCloseFunc) {
+    data.delayCloseFunc = null;
+  }
 })
 
 function initFreeDoApi() {
@@ -46,7 +52,6 @@ function initFreeDoApi() {
 }
 
 function onClosePopup() {
-
   function delayCloseFunc() {
     freeDo.value?.g?.marker.hideAllPopupWindow();
     data.delayCloseFunc = null;
@@ -63,13 +68,22 @@ function onClosePopup() {
 // 解析参数
 async function parseQuery() {
   await router.isReady();
-  const {id, menu, coverFloat, coverFit, nameFontSize}: any = route.query
+  const {id, sceneName, coverFloat, coverFit, nameFontSize}: any = route.query
   data.id = id || ''
-  data.menu = menu || ''
+  data.sceneName = sceneName || ''
   data.coverFloat = coverFloat || 'none'
   data.coverFit = coverFit || 'fill'
   data.nameFontSize = nameFontSize || 48
 }
+
+const markerOption = computed<IFreeMarkerOption>(() => {
+  const name = data.sceneName || Configs.freeDoCloudRendering.defaultScene;
+  const scene = Configs.freeDoCloudRendering.options.find(v => v.name === name)
+  if (!scene) {
+    return {} as IFreeMarkerOption
+  }
+  return scene.markers?.find(v => v.pid === data.id) || {} as IFreeMarkerOption;
+})
 
 const coverStyles = computed(() => {
   return {
@@ -93,7 +107,7 @@ const contentStyles = computed(() => {
   <div class="container">
     <div class="header">
       <div class="title">
-        <div :class="`text-box font-size-${data.nameFontSize}`">标题{{ data.readying }}</div>
+        <div :class="`text-box font-size-${data.nameFontSize}`">{{ markerOption.name }}</div>
       </div>
       <div class="close" @click.stop="onClosePopup()"></div>
     </div>
@@ -104,7 +118,7 @@ const contentStyles = computed(() => {
              :key="i"
              :style="coverStyles"
              :src="`/static/markers/cover/${item}`"/>
-        这是内容呀
+        {{ markerOption.name }}
       </div>
     </div>
   </div>

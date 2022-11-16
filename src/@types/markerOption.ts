@@ -2,11 +2,11 @@ import {Vector2, Vector3} from "/@/hooks/freeDo/lib/types/Vector";
 
 // 飞渡的一个标记点的数据结构
 export interface IFreeMarkerOption {
-    pid: string
-    name: string
-    point: Vector3 | Vector2, // Vector2时为世界经纬度坐标，需要转换
+    pid: string // 唯一id
+    name: string // 名称
+    point: Vector3 | Vector2, // Vector2时为世界经纬度坐标，需要转换 [0,0,0]|[0,0]
     iconSize?: Vector2
-    lookAtPoint?: IFreeCameraFrame
+    lookAtPoint?: IFreeCameraFrame // 镜头切换时
     sort?: number
 }
 

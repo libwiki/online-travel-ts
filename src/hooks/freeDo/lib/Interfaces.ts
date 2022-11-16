@@ -4,12 +4,16 @@ import {IMarker} from "/@/hooks/freeDo/lib/types/Marker";
 import {ISettings} from "/@/hooks/freeDo/lib/types/Settings";
 import {IAirCityEvents} from "/@/hooks/freeDo/lib/types/Events";
 import {ICommandResult} from "/@/hooks/freeDo/lib/types/BaseObject";
+import {APIErrorCodeEnum, CloudStatusEnum} from "/@/hooks/freeDo/lib/types/Status";
 
 export interface IAirCityAPI {
+    CloudStatus: CloudStatusEnum
+    APIErrorCode: APIErrorCodeEnum
     camera: ICamera
     coord: ICoord
     marker: IMarker
     settings: ISettings
+
 
     // 获取SDK的完整版本号，例如：5.3.0413
     getVersion(): string
@@ -44,7 +48,7 @@ export interface IComponent {
     onReady(): void // 数据准备就绪
     onEvent(event: IAirCityEvents): void //
     onUpdate(deltaTime: number): void // 每一次更新
-    onDispose(): void // 组件卸载
+    onDispose(): Promise<any> // 组件卸载
 }
 
 export interface IAirCityApiOption {

@@ -1,6 +1,7 @@
 import {FreeDo} from "/@/hooks/freeDo/FreeDo";
 import {Markers} from "/@/hooks/freeDo/lib/components/Markers";
 import Configs from "/@/configs/Configs";
+import {onUnmounted} from "vue";
 
 export function useFreeDo(elementId: string, sceneName: string) {
 
@@ -13,6 +14,9 @@ export function useFreeDo(elementId: string, sceneName: string) {
     const markerComponent = new Markers(freeDo)
     freeDo.components.push(markerComponent)
 
+    onUnmounted(() => {
+        freeDo.onDispose()
+    })
     return {
         freeDo,
         markerComponent,

@@ -140,17 +140,17 @@ export class FreeDo {
         }
     }
 
-    onDispose(reason = '页面卸载，自动关闭'): void {
+    async onDispose(reason = '页面卸载，自动关闭') {
         this.isRunning = false
-        this.components.forEach(v => v.onDispose())
-        this.g?.reset() // 重置场景
-        this.g?.destroy()
-        this._airCityPlayer?.destroy(reason)
+        await Promise.all(this.components.map(v => v.onDispose()))
+        await this.g?.reset() // 重置场景
+        await this.g?.destroy()
+        await this._airCityPlayer?.destroy(reason)
         this.emitter.emit(FreeDoEvents.onDispose)
     }
 
     onEvent(event: IAirCityEvents): void {
-        console.log('event', event)
+        // console.log('event', event)
         this.components.forEach(v => v.onEvent(event))
         this.emitter.emit(FreeDoEvents.onEvent, event)
     }

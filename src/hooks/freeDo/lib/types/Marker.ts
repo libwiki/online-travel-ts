@@ -82,11 +82,11 @@ export interface IMarker extends BaseObject {
     delete(ids: string | string[], fn?: Function): Promise<ICommandResult>
 
 
-    // 自动定位到合适的观察距离
-    focus(ids: string | string[], distance?: number, flyTime?: number, fn?: Function): Promise<ICommandResult>
+    // 自动定位到合适的观察距离 rotation：[Pitch,Yaw,Roll]
+    focus(ids: string | string[], distance?: number, flyTime?: number, rotation?: Vector3, fn?: Function): Promise<ICommandResult>
 
     // 自动定位到能观察所有标注对象的合适距离
-    focusAll(distance?: number, flyTime?: number, fn?: Function): Promise<ICommandResult>
+    focusAll(distance?: number, flyTime?: number, rotation?: Vector3, fn?: Function): Promise<ICommandResult>
 }
 
 // 坐标系类型

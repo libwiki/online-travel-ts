@@ -6,6 +6,7 @@ import {isArray} from "lodash";
 import mitt from "mitt";
 import {reactive} from "vue";
 import {Vector2, Vector3} from "/@/hooks/freeDo/lib/types/Vector";
+import qs from "qs";
 
 interface ICarouselOption {
     currentIndex: number,
@@ -35,6 +36,7 @@ type MarkerEventType = {
 export class Markers extends Component {
     emitter = mitt<MarkerEventType>()
     protected _currentMarkers: IMarkerOption[] = [];
+    protected _showPopupWindowMarkers: IMarkerOption[] = [];
     protected _carouselOption: ICarouselOption = {
         currentIndex: 0,
         intervalTime: 10000,
@@ -195,26 +197,33 @@ export class Markers extends Component {
         }
     }
 
-    onDispose() {
-        super.onDispose();
+    async onDispose() {
+        await super.onDispose();
+        await this.freeDo.g?.marker.clear()
         this.removeEventListeners();
     }
 
 
     async lockAtByMarkerId(id: string) {
+        // const ids = this._showPopupWindowMarkers.map(v => v.id)
+        // if (ids.length > 0) {
+        //     await this.freeDo.g?.marker.hidePopupWindow(ids)
+        //     this._showPopupWindowMarkers = [];
+        // }
+        await this.freeDo.g?.marker.hideAllPopupWindow()
         const o = this.currentMarkersMap.get(id)
         if (o) {
+            this.setMarkerImageTransparentStatus(o, false)
+            this.toggleMarkersImageTransparentStatus([o.id], true)
 
             if (o.userDataObjects && isArray(o.userDataObjects)) {
-                this.setMarkerImageTransparentStatus(o, false)
-                this.toggleMarkersImageTransparentStatus([o.id], true)
-                this.freeDo.lockAt(o.userDataObjects as IFreeCameraFrame)
+                await this.freeDo.lockAt(o.userDataObjects as IFreeCameraFrame)
             } else {
-                this.freeDo.g?.marker.focus([o.id], this.freeDo.option.poiDistance, 1)
+                this.freeDo.g?.marker.focus(o.id, this.freeDo.option.poiDistance, 1)
             }
-            await this.freeDo.g?.marker.hideAllPopupWindow()
-            this.freeDo.g?.marker.showPopupWindow(o.id);
-            console.log(await this.freeDo.g?.marker.get(o.id))
+            const res = await this.freeDo.g?.marker.showPopupWindow(o.id);
+            console.log('showPopupWindow res:', res, await this.freeDo.g?.marker.get(o.id))
+            this._showPopupWindowMarkers.push(o)
 
         }
     }
@@ -231,9 +240,13 @@ export class Markers extends Component {
         return window.location.host || ""
     }
 
-    protected get popupUrl() {
+    protected getPopupUrl(id: string) {
         const l = window.location;
-        return `${l.protocol}//${l.host}/popup`
+        const options = {
+            id,
+            sceneName: this.freeDo.option.name,
+        }
+        return `${l.protocol}//${l.host}/popup/?${qs.stringify(options)}`
     }
 
 
@@ -293,7 +306,7 @@ export class Markers extends Component {
                 // 文本背景颜色
                 // textBackgroundColor: '#0085D0',
                 // textOffset: [0, -5],
-                popupURL: `${this.popupUrl}`, //弹窗HTML链接
+                popupURL: `${this.getPopupUrl(item.pid)}`, //弹窗HTML链接
                 // popupURL: `http://localhost:5173/popup`, //弹窗HTML链接
                 // 弹窗背景颜色
                 // popupBackgroundColor: [1.0, 1.0, 1.0, 0],
@@ -306,7 +319,7 @@ export class Markers extends Component {
                 // 失去焦点后是否自动关闭弹出窗口
                 autoHidePopupWindow: false,
                 // 自动判断下方是否有物体
-                autoHeight: true,
+                autoHeight: false,
                 // 显示模式
                 displayMode: 2,
                 // 避让优先级
