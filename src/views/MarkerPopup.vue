@@ -94,7 +94,7 @@ async function parseQuery() {
   data.sceneName = sceneName || ''
   data.coverFloat = coverFloat || 'none'
   data.coverFit = coverFit || 'fill'
-  data.nameFontSize = nameFontSize || 48
+  data.nameFontSize = nameFontSize || 46
 }
 
 const markerOption = computed<IFreeMarkerOption>(() => {
