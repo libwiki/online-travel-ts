@@ -3,6 +3,7 @@ import JSEncrypt from 'jsencrypt'
 import Configs from "../configs/Configs";
 
 export function getStorageKey(key: string) {
+
     return `${Configs.StorageKeyPrefix}${key}`
 }
 

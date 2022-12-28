@@ -1,5 +1,4 @@
 import Main from "../layouts/Main.vue"
-
 export default [
     {
         path: '/',

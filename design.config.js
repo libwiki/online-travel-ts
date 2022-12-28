@@ -20,6 +20,6 @@ function pxToRem(variable, unit = 'rem') {
 // 将tailwind的rem转换为项目对应的设计稿的rem
 // https://www.tailwindcss.cn/docs/customizing-spacing#-2
 // 按照pxToRem的转换方式换算 tailwind （1 ： 0.25rem ： 4px）=>设计稿等于1600px => 则换算单位为16
-function twRemToRem(remVariable) {
-    return pxToRem(remVariable * 16)
+function twRemToRem(remVariable, unit = 'rem') {
+    return pxToRem(remVariable * 16, unit)
 }

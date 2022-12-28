@@ -4,7 +4,6 @@ import {encrypt, getStorageKey} from "../utils/helpers";
 import Auth from "../api/modules/Auth";
 import {Toast} from "vant";
 
-
 // 用户登录信息
 export const useUserInfoStore = defineStore("userInfo", {
     state: () => ({

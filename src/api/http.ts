@@ -44,9 +44,9 @@ export class HttpProxy {
         return this.request(url, 'delete', data, configs);
     }
 
-    request(url: string, method: string, data = {}, configs = {}): Promise<any> {
+    request<T extends any>(url: string, method: string, data = {}, configs = {}): Promise<T> {
         const can = canSetParams(method);
-        return request({
+        return request.request({
             url,
             method,
             data: can ? {} : data,
