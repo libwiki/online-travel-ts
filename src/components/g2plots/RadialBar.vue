@@ -62,6 +62,7 @@ const DefaultChartsOptions = {
   barStyle: {
     lineWidth: 0, // 图形描边宽度
     cursor: 'pointer',
+    shadowColor: 'black',
   },
 
 

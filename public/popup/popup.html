@@ -1,0 +1,111 @@
+<link rel="stylesheet/less" type="text/css" href="./assets/popup.less"/>
+<script src="./assets/less.v4.1.3.js"></script>
+<div id="app">
+    <div class="container">
+        <div class="header">
+            <div class="title">
+                <div :class="`text-box font-size-${nameFontSize}`">初始化API结果：{{ readying }}{{ menu }}</div>
+            </div>
+            <div class="close" @click.stop="onClosePopup"></div>
+        </div>
+        <div ref="bodyRef" class="body">
+            <div :style="contentStyles" class="content-box">
+                <img alt=""
+                     v-for="(item,i) in []"
+                     :key="i"
+                     :style="coverStyles"
+                     :src="`/static/markers/cover/${item}`"/>
+                这是内容呀
+            </div>
+        </div>
+    </div>
+</div>
+<script src="./assets/vue.v2.6.14.js"></script>
+<script src="/freedo/ac.min.v5.3.js"></script>
+<script>
+
+    const app = new Vue({
+        data() {
+            return {
+                id: '',
+                menu: '',
+                coverFloat: 'none', // none|left|right 封面图布局方式
+                coverFit: 'fill', // fill none
+                nameFontSize: 48, // 标题字号
+                airCityPlayer: null,
+                readying: false,
+                delayCloseFunc: null,
+            }
+        },
+        computed: {
+            coverStyles() {
+                return {
+                    float: this.coverFloat,
+                    width: this.coverFit === 'fill' ? '100%' : 'auto',
+                    height: 'auto',
+                    marginBottom: '10px',
+                }
+            },
+            contentStyles() {
+                return {
+                    float: this.coverFloat,
+                    width: this.coverFit === 'fill' ? '100%' : 'auto',
+                    // height: 'auto',
+                    marginBottom: '10px',
+                }
+            }
+        },
+        created() {
+            this.parseQuery();
+            this.getFreeDoApi();
+        },
+        methods: {
+            getFreeDoApi() {
+                const dtsOption = {
+                    iid: '2482846585653',
+                    pid: 17,
+                    showMarker: false,
+                    apiOptions: {
+                        onReady: this.onReady.bind(this),
+                    }
+                }
+                this.airCityPlayer = new window.AirCityPlayer('127.0.0.1:8080', dtsOption)
+            },
+            onReady() {
+                this.readying = true
+                if (typeof this.delayCloseFunc === 'function') {
+                    this.delayCloseFunc.call(this)
+                }
+            },
+            onClosePopup() {
+                this.menu = 'onClosePopup'
+
+                function delayCloseFunc() {
+                    __g.marker.hideAllPopupWindow();
+                    this.delayCloseFunc = null;
+                }
+
+                if (this.readying) {
+                    delayCloseFunc.call(this)
+                } else {
+                    this.delayCloseFunc = delayCloseFunc
+                }
+            },
+            async parseQuery() {
+                const query = {};
+                window.location.search.replace('?', '')
+                    .split('&').map(v => v.split('='))
+                    .forEach(v => {
+                        query[v[0]] = v[1];
+                    });
+                const {id, menu, coverFloat, coverFit, nameFontSize} = query;
+                this.id = id || ''
+                this.menu = menu || ''
+                this.coverFloat = coverFloat || 'none'
+                this.coverFit = coverFit || 'fill'
+                this.nameFontSize = nameFontSize || 48
+            }
+
+        }
+    }).$mount('#app');
+</script>

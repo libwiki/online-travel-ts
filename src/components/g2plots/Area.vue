@@ -44,6 +44,16 @@ const DefaultChartsOptions = {
       textAlign: "center",
     }
   },
+  areaStyle: {
+    lineWidth: 0, // 图形描边宽度
+    cursor: 'pointer',
+    fill: 'l(270) 0:#ffffff 0.5:#ff000000 1:#1890ff',
+    // fill: 'l(270) 0:#ffffff 0.5:#7ec2f3 1:#1890ff',
+    shadowColor: 'black',
+    shadowBlur: 10,
+    shadowOffsetX: 5,
+    shadowOffsetY: 5,
+  },
   smooth: true,
   startOnZero: true,
   xAxis: {

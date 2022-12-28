@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import {computed} from "vue";
 import _ from "lodash";
-import {px2rem} from "/@/utils/helpers";
+import {px2vw} from "/@/utils/helpers";
 
 const props = defineProps({
   height: Number,
@@ -12,7 +12,7 @@ const props = defineProps({
 const dividerStyles = computed(() => {
   const styles: { height?: string } = {}
   if (_.isNumber(props.height)) {
-    styles.height = px2rem(props.height)
+    styles.height = px2vw(props.height)
   }
   return styles
 })
@@ -20,12 +20,12 @@ const dividerStyles = computed(() => {
 const beforeStyles = computed(() => {
   const styles: { width?: string, height?: string } = {}
   if (_.isNumber(props.beforeHeight)) {
-    styles.height = px2rem(props.beforeHeight)
+    styles.height = px2vw(props.beforeHeight)
   } else if (_.isNumber(props.height)) {
-    styles.height = px2rem(props.height * 2)
+    styles.height = px2vw(props.height * 2)
   }
   if (_.isNumber(props.beforeWidth)) {
-    styles.width = px2rem(props.beforeWidth)
+    styles.width = px2vw(props.beforeWidth)
   } else if (_.isString(props.beforeWidth) && !_.isEmpty(props.beforeWidth)) {
     styles.width = props.beforeWidth;
   }

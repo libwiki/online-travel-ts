@@ -61,6 +61,13 @@ const DefaultChartsOptions = {
   sectorStyle: {
     lineWidth: 0, // 图形描边宽度
     cursor: 'pointer',
+    shadowColor: 'black',
+    shadowBlur: 10,
+    shadowOffsetX: 5,
+    shadowOffsetY: 5,
+    // fill: 'p(y)/red_bg_980.jpg',
+    // fill:'l(0) 0:#ffffff 0.5:#7ec2f3 1:#1890ff',
+    // fill: 'r(0.5, 0.5, 0.5) 0:#ffffff 1:#1890ff',
   },
 
 }

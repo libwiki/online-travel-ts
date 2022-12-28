@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import {ref} from "vue";
+import Marker from "/@/hooks/three3d/lib/htmlComponents/tags/Marker.vue";
 
 const defaultStatus = true
 const blockStatus = ref({
@@ -9,15 +10,26 @@ const blockStatus = ref({
   right: defaultStatus,
   nav: defaultStatus,
 })
+
+function togglePart(status: boolean) {
+  blockStatus.value.nav = status
+  blockStatus.value.left = status
+  blockStatus.value.right = status
+  blockStatus.value.title = status
+}
 </script>
 
 <template>
   <div class="main">
     <div class="header-box" v-if="blockStatus.header">
       <div class="bg-bak">
-        <div class="tw-h-full tw-w-full col-flex-center">
-          <router-view name="header">
-            <img class="tw-h-2/5 tw-w-auto" alt="" src="../assets/images/bg-title.6aaa5fbf.png"/>
+        <div class="tw-h-full tw-w-full col-flex-center tw-cursor-pointer" @click="togglePart(!blockStatus.nav)">
+          <router-view name="header" v-slot="{ Component }">
+            <img
+                v-if="!Component"
+                class="tw-h-2/5 tw-w-auto" alt=""
+                src="../assets/images/bg-title.6aaa5fbf.png"/>
+            <component :is="Component"/>
           </router-view>
         </div>
       </div>
@@ -34,17 +46,36 @@ const blockStatus = ref({
         </div>
       </div>
     </div>
-    <div class="row-flex-center nav-box" v-if="blockStatus.nav">
-      <div class="nav">
-        <router-view name="nav"/>
-      </div>
-    </div>
-    <div class="left-box" v-if="blockStatus.left">
-      <router-view name="left"/>
-    </div>
-    <div class="right-box" v-if="blockStatus.right">
-      <router-view name="right"/>
-    </div>
+    <router-view name="nav" v-slot="{ Component }">
+      <transition
+          enter-active-class="animate__animated animate__fadeInUp"
+          leave-active-class="animate__animated animate__fadeOutDown">
+        <div class="row-flex-center nav-box" v-if="blockStatus.nav">
+          <div class="nav">
+            <component :is="Component"/>
+          </div>
+        </div>
+      </transition>
+    </router-view>
+    <router-view name="left" v-slot="{ Component }">
+      <transition
+          enter-active-class="animate__animated animate__fadeInLeft"
+          leave-active-class="animate__animated animate__fadeOutLeft">
+        <div class="left-box" v-if="blockStatus.left">
+          <component :is="Component"/>
+        </div>
+      </transition>
+    </router-view>
+    <router-view name="right" v-slot="{ Component }">
+      <transition
+          enter-active-class="animate__animated animate__fadeInRight"
+          leave-active-class="animate__animated animate__fadeOutRight">
+        <div class="right-box" v-if="blockStatus.right">
+          <component :is="Component"/>
+        </div>
+      </transition>
+    </router-view>
+    <!--<Marker style="position: absolute;left: 50%;top: 50%" text="这是html的标签"/>-->
   </div>
 </template>
 

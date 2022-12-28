@@ -1,6 +1,8 @@
-import {Partial, Required} from "./objects";
+import {FreeCameraFrame, IFreeMarkerOption} from "/@/@types/markerOption";
 
 export interface ICloudOption {
+    name: string,
+
     title: string,
     // 区域编码
     areaCode: number,
@@ -11,12 +13,18 @@ export interface ICloudOption {
     // 飞渡工程id
     dtsPid: number,
     // 起始相机视角 地图起始坐标 x y z pitch yaw flyTime
-    point: number[],
+    point: FreeCameraFrame,
     // 标签聚焦时视角高度
-    poiDistance: number
+    poiDistance: number,
+    // 默认生成的标签点
+    markers?: IFreeMarkerOption[],
 }
 
-export type CloudOptions = Required<{ liangqing: ICloudOption, dahua: ICloudOption }>
+export interface IFreeDoCloudRenderingOption {
+    host: string, // 飞渡链连接地址
+    defaultScene: string, // 默认的场景名称
+    options: ICloudOption[],
+}
 
 export interface IConfigs {
     isDev: boolean
@@ -30,9 +38,6 @@ export interface IConfigs {
     publicKey: string, // 加密公钥
     eChartsAnimationDurationUpdate: number, // eCharts数据更新频率
     updateDataTimeWheelInterval: number, // 时间轮间隔（数据更新的大定时器），应该是eCharts数据更新频率的整倍数，并且不能过小（因为每一次时间轮都有可能请求后台数据）
-    // 云渲染平台配置
-    cloudRendering: {
-        DTS_HOST: string, // 飞渡链连接地址
-        options: CloudOptions,
-    }
+    // 飞渡云渲染平台配置
+    freeDoCloudRendering: IFreeDoCloudRenderingOption
 }

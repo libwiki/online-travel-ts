@@ -1,29 +1,22 @@
 import {IFeatureObject, IFeatureProperties, RayCasterEvents} from "/@/hooks/three3d/lib/Interfaces";
 import {getBox3ByObject3D, getCenterByBox3, getSizeByBox3, mergeBufferGeometries} from "/@/hooks/three3d/lib/utils";
 import * as Three from "three";
+import {Raycaster} from "three";
 import BigNumber from "bignumber.js";
 import Component from "/@/hooks/three3d/lib/abstracts/Component";
 import Tag from "/@/hooks/three3d/lib/htmlComponents/tags/Tag";
-import RayCasters from "/@/hooks/three3d/lib/components/RayCasters";
-import {Object3D, Raycaster} from "three";
 import _ from "lodash";
 
+// 整体的区域地图形状以及贴图
 export default class MapLayer extends Component {
     tagGroup = new Three.Group()
-    lineGroup = new Three.Group()
     shareGroup = new Three.Group()
     shareCoverGroup = new Three.Group()
     extrudeShareGroup = new Three.Group()
     tagComponents: Tag[] = []
     hoverPanel?: Three.Mesh // 当前鼠标经过的面
 
-    lineMaterial = new Three.LineBasicMaterial({
-        // color: 0x00cccc, //线条颜色
-        color: 0xffffff, //线条颜色
-        // depthTest: false, // 关闭深度测试(解决闪烁的问题，renderOrder等目前均出现些问题)
-    }); //线段材质对象
     standardMaterial = new Three.MeshStandardMaterial({
-        // color: 0x004444,
         color: 0xffffff,
         // opacity: 0.8,
         // bumpScale: 1, // 凹凸贴图会对材质产生多大影响。典型范围是0-1。默认值为1。
@@ -33,19 +26,12 @@ export default class MapLayer extends Component {
     }); // 形状材质对象
 
     lambertMaterial = new Three.MeshLambertMaterial({
-        // color: 0x004444,
         color: 0xffffff,
-        // opacity: 0.8,
-        // bumpScale: 1, // 凹凸贴图会对材质产生多大影响。典型范围是0-1。默认值为1。
-        // roughness: 1, // 材质的粗糙程度。0.0表示平滑的镜面反射
-        // metalness: 0.0, // 材质与金属的相似度
-        // side: DoubleSide, //两面可见
     }); // 形状材质对象
 
     onStart() {
         super.onStart();
         this.tagGroup.name = 'tagGroup'
-        this.lineGroup.name = 'lineGroup'
         this.shareGroup.name = 'shareGroup'
         this.shareCoverGroup.name = 'shareCoverGroup'
         this.extrudeShareGroup.name = 'extrudeShareGroup'
@@ -55,12 +41,19 @@ export default class MapLayer extends Component {
 
     // 数据准备就绪
     onReady() {
-        this.generateMap(this.map.featureObjects)
+        super.onReady()
+        this.generateMap(this.map.areaFeatureObjects)
     }
 
-    onUpdate() {
-        super.onUpdate();
-        this.tagComponents.forEach(v => v.onUpdate())
+    onUpdate(deltaTime: number) {
+        super.onUpdate(deltaTime);
+        this.tagComponents.forEach(v => v.onUpdate(deltaTime))
+    }
+
+    onDispose() {
+        super.onDispose();
+        this.tagComponents.forEach(v => v.onDispose())
+        this.tagComponents = []
     }
 
     generateMap(featureObjects: IFeatureObject[], loop = true) {
@@ -68,31 +61,23 @@ export default class MapLayer extends Component {
             const shapeGeos: Three.ExtrudeGeometry[] = []
             item.geometry.forEach(arr => {
                 const vector2Arr: Three.Vector2[] = []
-                const vector3Arr: Three.Vector3[] = []
                 arr.forEach((elem: any) => {
                     const v = this.map.mProjection(elem)
                     if (v) {
                         vector2Arr.push(new Three.Vector2(v[0], -v[1]))
-                        vector3Arr.push(new Three.Vector3(v[0], -v[1], 0.103))
                     }
                 })
+                // 生成每一个图形的点（一个区域可能有多个不相交的图形组成）
                 shapeGeos.push(this.getExtrudeGeometry(new Three.Shape(vector2Arr)))
-                this.drawLine(vector3Arr, item.properties, loop)
             })
-            const geo = mergeBufferGeometries(shapeGeos)
-            this.drawExtrudeShareByGeometry(geo, item.properties)
+            // 生成区域
+            this.drawExtrudeShareByGeometry(mergeBufferGeometries(shapeGeos), item.properties); // 生成边界面板以及区域附属对象
         })
         // 附加到场景地图分组中（会在onUpdate中进行渲染）
-        this.map.mapGroup.add(this.lineGroup)
         this.map.mapGroup.add(this.extrudeShareGroup)
         this.map.mapGroup.add(this.tagGroup)
-        this.bindEvents(); // 绑定射线事件
 
-        const box3 = getBox3ByObject3D(this.map.mapGroup)
-        const center = getCenterByBox3(box3)
-        const mapSize = getSizeByBox3(box3)
-        this.map.center = center
-        this.map.mapSize = mapSize
+        this.bindEvents(); // 绑定射线事件
     }
 
     bindEvents() {
@@ -162,51 +147,36 @@ export default class MapLayer extends Component {
     }
 
 
-    getGeometryByPoints(points: Three.Vector3[]) {
-        return new Three.BufferGeometry().setFromPoints(points);
-    }
-
-    // 生成区域边界线
-    drawLine(points: Three.Vector3[], properties: IFeatureProperties, loop = true) {
-        const geometry = this.getGeometryByPoints(points);
-        const lineMaterial = this.lineMaterial.clone()
-        const line = loop ? new Three.LineLoop(geometry, lineMaterial) : new Three.Line(geometry, lineMaterial)
-        line.name = properties.name
-        line.userData = properties
-        this.lineGroup.add(line);
-    }
-
-
     // 生成边界面板以及附属对象
-    drawExtrudeShareByGeometry(geometry: Three.BufferGeometry, properties: IFeatureProperties) {
+    protected drawExtrudeShareByGeometry(geometry: Three.BufferGeometry, properties: IFeatureProperties) {
         const material1 = this.lambertMaterial.clone()
-        // material1.transparent = true
+        const material2 = this.lambertMaterial.clone()
         const texture2Url = `/geojson/dahua/texture/extrude_bg.png`;
-        // const texture2Url = `/geojson/贴图.png`;
         const texture = this.map.loadTexture(texture2Url)
         texture.wrapS = Three.RepeatWrapping
         texture.wrapT = Three.RepeatWrapping
-        const material2 = this.lambertMaterial.clone()
-        // material2.map = texture;
-        // material2.transparent = true;
+        texture.repeat.set(100, 1)
+        material2.map = texture;
+        material2.transparent = true;
 
         const mesh = new Three.Mesh(geometry, [material1, material2]); //网格模型对象
         mesh.name = properties.name;
         mesh.userData = properties;
-        const box3 = getBox3ByObject3D(mesh)
-        this.drawAreaTag(box3, properties)
-        this.drawPlaneTextureByBox3(box3, properties)
+        mesh.castShadow = this.map.debug.castShadow || false;
+        mesh.receiveShadow = this.map.debug.castShadow || false;
+        console.log(mesh)
 
-        // const planeMesh2 = this.drawPlaneTextureByBox3(box3, '/geojson/贴图.png', 0.02)
         this.shareGroup.add(mesh)
 
-        // this.extrudeShareGroup.add(planeMesh)
-        // this.map.scene.add(shareGroup)
-        // this.map.scene.add(planeMesh2)
+        // 其它附属于该区域的对象
+        const box3 = getBox3ByObject3D(mesh)
+        this.drawAreaTag(box3, properties); // 生成区域中心点的坐标
+        this.drawPlaneTextureByBox3(box3, properties); // 生成区域面的贴图
+
     }
 
     // 生成每一个区域的标签
-    drawAreaTag(box3: Three.Box3, properties: IFeatureProperties) {
+    protected drawAreaTag(box3: Three.Box3, properties: IFeatureProperties) {
         const tag = new Tag(this.map, properties.name)
         tag.onCreate(getCenterByBox3(box3), properties)
         this.tagComponents.push(tag)
@@ -214,7 +184,7 @@ export default class MapLayer extends Component {
     }
 
     // 生成边界贴图
-    async drawPlaneTextureByBox3(box3: Three.Box3, properties: IFeatureProperties, zOffset = 0) {
+    protected async drawPlaneTextureByBox3(box3: Three.Box3, properties: IFeatureProperties, zOffset = 0) {
         try {
             const textureUrl = `/geojson/dahua/texture/${properties.name}.png`;
             const texture = await this.map.loadTextureAsync(textureUrl)
@@ -224,7 +194,7 @@ export default class MapLayer extends Component {
             material.map = texture
             material.transparent = true
             material.alphaTest = 0.1 //  (解决闪烁的问题)
-            material.depthTest = false // 关闭深度测试(解决闪烁的问题，renderOrder等目前均出现些问题)
+            // material.depthTest = false // 关闭深度测试(解决闪烁的问题，renderOrder等目前均出现些问题)
 
             const size = getSizeByBox3(box3)
             const center = getCenterByBox3(box3)
@@ -233,22 +203,23 @@ export default class MapLayer extends Component {
             mesh.name = properties.name;
             mesh.userData = properties;
             mesh.position.set(center.x, center.y, BigNumber(size.z).plus(zOffset).toNumber());//设置mesh位置
-            // mesh.renderOrder = 100; // 设置贴图渲染排序（解决模型重合闪烁的问题）
             this.shareCoverGroup.add(mesh)
         } catch (e) {
 
         }
     }
 
-    getExtrudeGeometry(shapes: Three.Shape | Three.Shape[]) {
+
+    protected getExtrudeGeometry(shapes: Three.Shape | Three.Shape[]) {
+        const depth = this.map.mapDeptHeight
         return new Three.ExtrudeGeometry(shapes, {
-            depth: 0.1, //拉伸高度 根据行政区尺寸范围设置，比如高度设置为尺寸范围的2%，过小感觉不到高度，过大太高了
+            depth, //拉伸高度 根据行政区尺寸范围设置，比如高度设置为尺寸范围的2%，过小感觉不到高度，过大太高了
             // bevelEnabled: false, //无倒角
             curveSegments: 28, // 曲线上点的数量，默认值是12
             bevelEnabled: true, // 对挤出的形状应用是否斜角，默认值为true
-            bevelThickness: 0.001, // 设置原始形状上斜角的厚度。默认值为0.2。
-            bevelSize: 0.001, // 斜角与原始形状轮廓之间的延伸距离，默认值为bevelThickness-0.1。
-            bevelOffset: 0.0001, // 与倒角开始的形状轮廓的距离。默认值为0。
+            bevelThickness: depth / 100, // 设置原始形状上斜角的厚度。默认值为0.2。
+            bevelSize: depth / 100, // 斜角与原始形状轮廓之间的延伸距离，默认值为bevelThickness-0.1。
+            bevelOffset: depth / 1000, // 与倒角开始的形状轮廓的距离。默认值为0。
             bevelSegments: 1, // 斜角的分段层数，默认值为3。
 
         });

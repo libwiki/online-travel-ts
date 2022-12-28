@@ -10,7 +10,7 @@ export default [
                 name: "home",
                 path: '/home',
                 components: {
-                    default:()=>import("../views/Home.vue"),
+                    default: () => import("../views/Home.vue"),
                     nav: () => import("../views/nav/HomeNav.vue"),
                     left: () => import("../views/left/HomeLeft.vue"),
                     right: () => import("../views/right/HomeRight.vue"),
@@ -20,6 +20,15 @@ export default [
                     auth: true, // 是否验证登录权限
                 }
             },
-        ]
+
+        ],
+    },
+    {
+        name: "popup",
+        path: '/popup',
+        component: () => import("../views/MarkerPopup.vue"),
+        meta: {
+            title: "一键游南宁",
+        }
     },
 ]

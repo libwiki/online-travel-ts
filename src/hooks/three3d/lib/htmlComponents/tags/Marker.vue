@@ -1,10 +1,11 @@
 <script lang="ts" setup>
 import {computed, ref, toRaw} from "vue";
-import {px2rem} from "/@/utils/helpers";
+import {px2vh, px2vw} from "/@/utils/helpers";
 import _ from "lodash";
 import {ITagCss} from "/@/hooks/three3d/lib/htmlComponents/tags/interfaces";
 
 interface IProps {
+  name?: string,
   text?: string | number,
   textAlign?: string
   flexRight?: boolean
@@ -13,6 +14,7 @@ interface IProps {
 
 // 各个参数默认值参考style中的变量，均是以设计图为准
 const props = withDefaults(defineProps<IProps>(), {
+  name: '',
   text: '',
   textAlign: 'center',
   flexRight: false,
@@ -36,7 +38,7 @@ function setProps(data: IProps) {
   fillOptions.value = data
 }
 
-defineExpose({setProps})
+
 const options = computed(() => {
   return _.cloneDeep({...toRaw(props), ...toRaw(fillOptions.value)})
 })
@@ -47,25 +49,25 @@ const cssOptions = computed(() => {
 const styles = computed(() => {
   return {
     point: {
-      width: px2rem(cssOptions.value.markerPoiWidth),
-      height: px2rem(cssOptions.value.markerPoiHeight),
+      width: px2vw(cssOptions.value.markerPoiWidth),
+      height: px2vh(cssOptions.value.markerPoiHeight),
     },
     marker: {
-      width: px2rem(cssOptions.value.markerWidth),
-      height: px2rem(cssOptions.value.markerHeight),
-      bottom: px2rem((cssOptions.value.markerPoiHeight || 0) / 2),
+      width: px2vw(cssOptions.value.markerWidth),
+      height: px2vh(cssOptions.value.markerHeight),
+      bottom: px2vh((cssOptions.value.markerPoiHeight || 0) / 2),
     },
     labelBox: {
-      bottom: px2rem((cssOptions.value.markerPoiHeight || 0) / 2 + (cssOptions.value.markerHeight || 0) + (cssOptions.value.markerLabelMargin || 0)),
+      bottom: px2vh((cssOptions.value.markerPoiHeight || 0) / 2 + (cssOptions.value.markerHeight || 0) + (cssOptions.value.markerLabelMargin || 0)),
     },
     labelContent: {
-      minWidth: px2rem((cssOptions.value.labelMarginLeft || 0) * 2 + (cssOptions.value.textXPadding || 0) * 2),
+      minWidth: px2vw((cssOptions.value.labelMarginLeft || 0) * 2 + (cssOptions.value.textXPadding || 0) * 2),
       height: cssOptions.value.labelHeight,
     },
     text: {
-      height: px2rem((cssOptions.value.labelHeight || 0) - (cssOptions.value.arrowHeight || 0)),
-      lineHeight: px2rem((cssOptions.value.labelHeight || 0) - (cssOptions.value.arrowHeight || 0)),
-      padding: `0 ${px2rem(cssOptions.value.textXPadding || 0)}`,
+      height: px2vh((cssOptions.value.labelHeight || 0) - (cssOptions.value.arrowHeight || 0)),
+      lineHeight: px2vh((cssOptions.value.labelHeight || 0) - (cssOptions.value.arrowHeight || 0)),
+      padding: `0 ${px2vw(cssOptions.value.textXPadding || 0)}`,
       textAlign: `${options.value.textAlign}`,
     }
   }
@@ -74,17 +76,37 @@ const styles = computed(() => {
 function onContextmenu(e: MouseEvent) {
   e.preventDefault();
 }
+
+const emits = defineEmits<{
+  (event: 'click', data: { e: MouseEvent, name: string }): void,
+}>()
+
+function onLabelClick(e: MouseEvent) {
+  e.preventDefault()
+  e.stopPropagation()
+  emits("click", {e, name: props.name})
+}
+
+defineExpose({setProps})
 </script>
 
 <template>
   <div class="marker-container " @contextmenu.stop="onContextmenu">
     <div :style="styles.point" class="point">
       <div :style="styles.marker" class="marker"></div>
-      <div :style="styles.labelBox" :class="`label-box  ${options.flexRight?'right':''}`">
+      <div
+          @click="onLabelClick"
+          :style="styles.labelBox"
+          :class="`label-box  ${options.flexRight?'right':''}`">
         <div :style="styles.labelContent" :class="`label-content  ${options.flexRight?'right':''}`">
           <div :style="styles.text" class="text">{{ options.text }}</div>
         </div>
       </div>
+      <!--<div-->
+      <!--    style="position: absolute;bottom: 130px;background: aqua;width: 100px;height: 100px;opacity: 0.7;border: solid 1px red;">-->
+      <!--  弹框-->
+      <!--</div>-->
+
     </div>
   </div>
 </template>
@@ -127,6 +149,7 @@ function onContextmenu(e: MouseEvent) {
       bottom: (@markerPoiHeight/2 + @markerHeight + @markerLabelMargin);
       left: 0;
       position: absolute;
+      cursor: pointer;
 
       &.right {
         left: inherit;
