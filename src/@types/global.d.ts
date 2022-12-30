@@ -3,7 +3,8 @@ import {IAirCityPlayer, IAirCityPlayerOption} from "/@/hooks/freeDo/lib/types/Ai
 
 export {}
 declare global {
-    declare module '*.js'
+    declare module '*.js';
+    declare module 'superapi-51world';
 
     interface Window {
         _configs: any;
@@ -11,4 +12,5 @@ declare global {
         __g: IAirCityAPI; // 飞渡实例（只有new AirCityAPI以后，全局变量 __g 才是有效的。）
     }
 }
+
 

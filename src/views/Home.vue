@@ -5,7 +5,9 @@ import SvgIcon from "/@/components/SvgIcon.vue";
 import {useUserInfoStore} from "/@/store/userStore";
 import {isEmpty} from "lodash";
 import Configs from "/@/configs/Configs";
+import {useCloud51} from "/@/hooks/cloud51/useCloud51";
 
+const SvgIconSize = 35;
 const el = ref<HTMLElement>()
 const userInfoStore = useUserInfoStore();
 onMounted(() => {
@@ -21,13 +23,15 @@ const sceneName = computed(() => {
 })
 
 const free = useFreeDo('playerController', sceneName.value)
+const cloud = useCloud51('playerController', 'guangxi')
 
 function initThree3d() {
   if (el.value) {
     // const three3d = useThree3d(el.value)
     // three3d.onStart()
 
-    free.onStart()
+    // free.onStart()
+    cloud.onStart()
   }
 }
 
@@ -50,24 +54,24 @@ async function getCameraFrame() {
       @mousedown.stop @mouseup.stop @mousemove.stop
       class="play-controller col-flex-center tw-space-y-10">
     <SvgIcon
-        size="25" name="icon-pause-active"
+        :size="SvgIconSize" name="icon-pause-active"
         class="tw-cursor-pointer"
         @click="free.markerComponent.toggleSleep(true)"
         v-if="isRunning"/>
     <SvgIcon
-        size="25" name="icon-play-active"
+        :size="SvgIconSize" name="icon-play-active"
         class="tw-cursor-pointer"
         @click="free.markerComponent.toggleRunning(true,true)"
         v-else/>
     <SvgIcon
-        size="25" name="icon-close-loop"
+        :size="SvgIconSize" name="icon-close-loop"
         @click="free.markerComponent.toggleRunning(false)"
         class="tw-cursor-pointer"/>
     <SvgIcon
-        size="25" name="icon-location"
+        :size="SvgIconSize" name="icon-location"
         @click="free.freeDo.onResetCameraFrame()"
         class="tw-cursor-pointer"/>
-    <button @click="getCameraFrame">相机</button>
+    <!--<button @click="getCameraFrame">相机</button>-->
   </div>
 </template>
 

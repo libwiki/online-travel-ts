@@ -21,9 +21,24 @@ export interface ICloudOption {
 }
 
 export interface IFreeDoCloudRenderingOption {
-    host: string, // 飞渡链连接地址
+    host: string, // 飞渡连接地址
     defaultScene: string, // 默认的场景名称
     options: ICloudOption[],
+}
+
+export interface I51CloudOption {
+    name: string,
+
+    title: string,
+    // 区域编码
+    areaCode: number,
+    cloudId: string,
+}
+
+export interface I51CloudRenderingOption {
+    host: string, // 51cloud连接地址
+    defaultScene: string, // 默认的场景名称
+    options: I51CloudOption[],
 }
 
 export interface IConfigs {
@@ -38,6 +53,7 @@ export interface IConfigs {
     publicKey: string, // 加密公钥
     eChartsAnimationDurationUpdate: number, // eCharts数据更新频率
     updateDataTimeWheelInterval: number, // 时间轮间隔（数据更新的大定时器），应该是eCharts数据更新频率的整倍数，并且不能过小（因为每一次时间轮都有可能请求后台数据）
-    // 飞渡云渲染平台配置
-    freeDoCloudRendering: IFreeDoCloudRenderingOption
+
+    cloud51Rendering: I51CloudRenderingOption // 51cloud云渲染平台配置
+    freeDoCloudRendering: IFreeDoCloudRenderingOption,  // 飞渡云渲染平台配置
 }

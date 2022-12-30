@@ -25,11 +25,24 @@ const Configs: IConfigs = {
     publicKey: import.meta.env.VITE_PUBLIC_KEY || '', // 加密公钥
     eChartsAnimationDurationUpdate, // eCharts数据更新频率
     updateDataTimeWheelInterval: eChartsAnimationDurationUpdate * 3, // 时间轮间隔（数据更新的大定时器），应该是eCharts数据更新频率的整倍数，并且不能过小（因为每一次时间轮都有可能请求后台数据）
+    cloud51Rendering: { // 51cloud配置
+        host: 'https://192.168.58.1:8889/Renderers/Any/order', // 飞渡链连接地址
+        defaultScene: "guangxi", // 默认显示的场景名称
+        options: [ // 场景配置
+            {
+                name: "guangxi",
+                title: '广西区简单底图',
+                // 区域编码
+                areaCode: 450108,
+                cloudId: "1eEE35e8",
+            },
+        ]
 
+    },
     // 飞渡云渲染平台配置 （比较长 实际会由/configs.js中的配置覆盖，此处只是做个保底操作配置）
     freeDoCloudRendering: {
         host: '127.0.0.1:8080', // 飞渡链连接地址
-        defaultScene:"liangqing", // 默认显示的场景名称
+        defaultScene: "liangqing", // 默认显示的场景名称
         options: [ // 场景配置
             {
                 name: "liangqing",
