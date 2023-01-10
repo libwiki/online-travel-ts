@@ -1,8 +1,9 @@
 <script lang="ts" setup>
 import {computed} from "vue";
+import Configs from "/@/configs/Configs";
 
 const skinClass = computed(() => {
-  return "skin-blue"
+  return Configs.cssSkinName
 })
 </script>
 

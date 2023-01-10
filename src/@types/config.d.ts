@@ -42,8 +42,9 @@ export interface I51CloudRenderingOption {
 }
 
 export interface IConfigs {
-    isDev: boolean
+    isDev: boolean // 是否开发环境
     cssVars: any
+    cssSkinName: string // 当前使用的皮肤名称
     StorageKeyPrefix: string, // 存贮key的前缀
     debug: boolean, // 是否开启debug
     baseUrl: string, // 请求的服务器api接口基础url

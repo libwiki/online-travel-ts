@@ -16,6 +16,7 @@ const eChartsAnimationDurationUpdate = 3000;
 const Configs: IConfigs = {
     isDev, // 是否开发环境
     cssVars,
+    cssSkinName:'skin-blue', // 当前使用的皮肤名称
     StorageKeyPrefix: "digit_", // 存贮key的前缀
     debug: import.meta.env.VITE_DEBUG || false, // 是否开启debug
     baseUrl: import.meta.env.VITE_API_HOST || '/', // 请求的服务器api接口基础url
