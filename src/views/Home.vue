@@ -6,6 +6,7 @@ import {useUserInfoStore} from "/@/store/userStore";
 import {isEmpty} from "lodash";
 import Configs from "/@/configs/Configs";
 import {useCloud51} from "/@/hooks/cloud51/useCloud51";
+import {useThree3d} from "/@/hooks/three3d/useThree3d";
 
 const SvgIconSize = 35;
 const el = ref<HTMLElement>()
@@ -22,16 +23,16 @@ const sceneName = computed(() => {
   return info.username;
 })
 
-const free = useFreeDo('playerController', sceneName.value)
-const cloud = useCloud51('playerController', 'guangxi')
+const free = useFreeDo('playerController', sceneName.value); // 飞渡底图
+const cloud = useCloud51('playerController', 'guangxi') // 51cloud底图
 
 function initThree3d() {
   if (el.value) {
-    // const three3d = useThree3d(el.value)
-    // three3d.onStart()
+    const three3d = useThree3d(el.value); // threejs底图
+    three3d.onStart()
 
     // free.onStart()
-    cloud.onStart()
+    // cloud.onStart()
   }
 }
 
